@@ -14,14 +14,20 @@ bot_commands = (
 load_dotenv()
 
 
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_PORT = os.getenv("DB_PORT")
+
 porstgres_url = URL.create(
     "postgresql+asyncpg",
-    username=os.getenv("DB_USER"),
+    username=DB_USER,
     host="localhost",
-    password=os.getenv("DB_PASSWORD"),
-    database=os.getenv("DB_NAME"),
-    port=os.getenv("DB_PORT")
+    password=DB_PASSWORD,
+    database=DB_NAME,
+    port=DB_PORT
 )
+
 
 @dataclass
 class Bots:

@@ -1,6 +1,9 @@
 import datetime
 
 from sqlalchemy import Column, BigInteger, VARCHAR, DATE
+from sqlalchemy.orm import relationship
+
+
 from .base import BaseModel
 
 
@@ -19,6 +22,9 @@ class User(BaseModel):
     # Last update date
     upd_date = Column(DATE, default=datetime.date.today())
     
+    # Отношение между пользователем и его карточками
+    cards = relationship("Card", back_populates="user")
+
     
     def __str__(self) -> str:
         return f"--User:{self.user_id}--"
