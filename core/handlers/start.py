@@ -5,8 +5,8 @@ from aiogram.utils.keyboard import (
     ReplyKeyboardBuilder
 )
 
-from core.settings import  bot_commands
-from core.keyboards import MAIN_MENU_BOARD
+from settings import  bot_commands
+from keyboards import MAIN_MENU_BOARD
 
 # @router.startup()
 # async def start_bot(bot: Bot):

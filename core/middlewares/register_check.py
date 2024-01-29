@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
 
-from core.db import User
+from db import User
 
 
 class RegisterCheck(BaseMiddleware):

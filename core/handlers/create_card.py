@@ -4,10 +4,10 @@ from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.orm import sessionmaker
 
-from core.handlers.utils import update_card_creation_message, format_word
-from core.structures.fsm_group import CardStates
-from core.keyboards import CANCEL_BOARD,  CANCEL_AND_NEXT_BOARD, MAIN_MENU_BOARD
-from core.db import create_card
+from handlers.utils import update_card_creation_message, format_word
+from structures.fsm_group import CardStates
+from keyboards import CANCEL_BOARD,  CANCEL_AND_NEXT_BOARD, MAIN_MENU_BOARD
+from db import create_card
 
 
 

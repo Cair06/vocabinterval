@@ -3,11 +3,11 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 from aiogram.fsm.context import FSMContext
 
-from core.structures.fsm_group import EditCardState
-from core.db import update_card
-from core.keyboards import CHOOSE_FIELD_TO_EDIT
+from structures.fsm_group import EditCardState
+from db import update_card
+from keyboards import CHOOSE_FIELD_TO_EDIT
 from .get_cards import on_get_card_details
-from core.keyboards import MAIN_MENU_BOARD
+from keyboards import MAIN_MENU_BOARD
 
 
 async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmaker, state: FSMContext):

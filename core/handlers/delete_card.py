@@ -2,10 +2,10 @@
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.orm import sessionmaker
-from core.structures.fsm_group import DeleteCardState
-from core.db import delete_card, delete_all_user_cards
-from core.keyboards.cancel_board import CANCEL_AND_NEXT_BOARD
-from core.keyboards import MAIN_MENU_BOARD
+from structures.fsm_group import DeleteCardState
+from db import delete_card, delete_all_user_cards
+from keyboards.cancel_board import CANCEL_AND_NEXT_BOARD
+from keyboards import MAIN_MENU_BOARD
 
 
 async def on_delete_all_cards(callback_query: CallbackQuery, state: FSMContext):

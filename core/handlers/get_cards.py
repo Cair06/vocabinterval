@@ -2,10 +2,10 @@
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id
+from db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id
 from .paginations import Pagination
-from core.handlers.utils import format_word
-from core.keyboards import MAIN_MENU_BOARD
+from handlers.utils import format_word
+from keyboards import MAIN_MENU_BOARD
 
 
 async def on_start(message: Message, session_maker: sessionmaker):
