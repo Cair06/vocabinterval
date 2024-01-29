@@ -7,6 +7,7 @@ from core.structures.fsm_group import EditCardState
 from core.db import update_card
 from core.keyboards import CHOOSE_FIELD_TO_EDIT
 from .get_cards import on_get_card_details
+from core.keyboards import MAIN_MENU_BOARD
 
 
 async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmaker, state: FSMContext):
@@ -43,9 +44,9 @@ async def on_field_value(message: Message, session_maker: sessionmaker, state: F
     updated = await update_card(session_maker, card_id, message.from_user.id, **field_to_update)
     
     if updated:
-        await message.answer("Карточка успешно обновлена.")        
+        await message.answer("Карточка успешно обновлена.", reply_markup=MAIN_MENU_BOARD)        
         await on_get_card_details(message, session_maker, word)
     else:
-        await message.answer("Ошибка при обновлении карточки.")
+        await message.answer("Ошибка при обновлении карточки.", reply_markup=MAIN_MENU_BOARD)
         
     await state.finish()

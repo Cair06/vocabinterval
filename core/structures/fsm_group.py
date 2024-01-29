@@ -17,3 +17,4 @@ class EditCardState(StatesGroup):
 
 class DeleteCardState(StatesGroup):
     waiting_for_confirm_delete = State()
+    waiting_for_confirm_delete_all = State()

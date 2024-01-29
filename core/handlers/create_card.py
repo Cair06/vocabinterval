@@ -6,10 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 from core.handlers.utils import update_card_creation_message, format_word
 from core.structures.fsm_group import CardStates
-from core.keyboards import CANCEL_BOARD,  CANCEL_AND_NEXT_BOARD
+from core.keyboards import CANCEL_BOARD,  CANCEL_AND_NEXT_BOARD, MAIN_MENU_BOARD
 from core.db import create_card
-
-from .start import get_start
 
 
 
@@ -22,7 +20,7 @@ async def menu_card_create_confirmation(message: types.Message, state: FSMContex
 async def menu_card_create(message: types.Message, state: FSMContext):
     if message.text == 'Отмена':
         await state.clear()
-        return await get_start(message)
+        return await message.answer("Создание карточки отменено.", reply_markup=MAIN_MENU_BOARD)
     elif message.text == "Продолжить":
         bot_message = await message.answer('Создайте новую карточку!📝\n<i>Если у вас имеются несколько слов/предложений в одном из разделов разделите их запятыми</i>\n\nСлово: 🚫\nПеревод: 🚫\nТранскрипция: 🚫\nКонтекст: 🚫')
         await state.update_data(bot_message_id=bot_message.message_id)
@@ -32,6 +30,9 @@ async def menu_card_create(message: types.Message, state: FSMContext):
 
 
 async def menu_card_create_word(message: types.Message, state: FSMContext):
+    if message.text == 'Отмена':
+        await state.clear()
+        return await message.answer("Создание карточки отменено.", reply_markup=MAIN_MENU_BOARD)
     user_data = await state.get_data()
     await update_card_creation_message(
         bot_message_id=user_data['bot_message_id'],
@@ -54,7 +55,7 @@ async def menu_card_create_translate(message: types.Message, state: FSMContext):
     # Проверяем ввод пользователя
     if message.text == 'Отмена':
         await state.clear()
-        return await get_start(message)
+        return await message.answer("Создание карточки отменено.", reply_markup=MAIN_MENU_BOARD)
     elif message.text == "Продолжить":
         card_translation = ""
         await message.answer("Поле 'Перевод' обязательное. Пожалуйста, введите перевод.")
@@ -86,7 +87,7 @@ async def menu_card_create_transcription(message: types.Message, state: FSMConte
     # Проверяем ввод пользователя
     if message.text == 'Отмена':
         await state.clear()
-        return await get_start(message)
+        return await message.answer("Создание карточки отменено.", reply_markup=MAIN_MENU_BOARD)
     elif message.text == "Продолжить":
         card_transcription = ""
     else:
@@ -115,7 +116,7 @@ async def menu_posts_create_example_usage(message: types.Message, state: FSMCont
     # Проверяем ввод пользователя
     if message.text == 'Отмена':
         await state.clear()
-        return await get_start(message)
+        return await message.answer("Создание карточки отменено.", reply_markup=MAIN_MENU_BOARD)
     elif message.text == "Продолжить":
         card_example_usage = ""
     else:
@@ -148,13 +149,11 @@ async def menu_posts_create_example_usage(message: types.Message, state: FSMCont
 
     # Отправляем сообщение о создании карточки
     if card:
-        await message.answer("Карта была успешно создана!", reply_markup=ReplyKeyboardRemove())
+        await message.answer("Карта была успешно создана!", reply_markup=MAIN_MENU_BOARD)
     else:
-        await message.answer("Произошла ошибка при создании карточки.")
+        await message.answer("Произошла ошибка при создании карточки.", reply_markup=MAIN_MENU_BOARD)
 
     # Очищаем состояние
     await state.clear()
     # Удаляем сообщение с инструкцией
     await message.bot.delete_message(chat_id=message.chat.id, message_id=instruction_message_id)
-    # Возвращаем пользователя в начальное меню
-    await get_start(message)

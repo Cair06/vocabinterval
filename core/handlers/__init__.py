@@ -33,7 +33,7 @@ from .edit_card import (
     on_field_value
 )
 
-from .delete_card import on_delete_card, on_delete_card_confirm
+from .delete_card import on_delete_card, on_delete_card_confirm, on_delete_all_cards, on_delete_all_cards_confirm
 
 from core.structures.fsm_group import CardStates, EditCardState, DeleteCardState
 from .paginations import Pagination
@@ -76,6 +76,9 @@ def register_user_commands(router: Router) -> None:
 
     router.callback_query.register(on_delete_card, lambda c: c.data.startswith('delete_card_'))
     router.message.register(on_delete_card_confirm, DeleteCardState.waiting_for_confirm_delete)
+    
+    router.callback_query.register(on_delete_all_cards, lambda c: c.data == 'delete_all_cards')
+    router.message.register(on_delete_all_cards_confirm, DeleteCardState.waiting_for_confirm_delete_all)
 
     # Регистрация обработчика для выбора поля редактирования
     router.callback_query.register(on_field_choice, lambda c: c.data.startswith('edit_'))

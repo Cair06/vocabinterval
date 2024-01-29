@@ -6,7 +6,7 @@ from aiogram.utils.keyboard import (
 )
 
 from core.settings import  bot_commands
-
+from core.keyboards import MAIN_MENU_BOARD
 
 # @router.startup()
 # async def start_bot(bot: Bot):
@@ -18,19 +18,9 @@ from core.settings import  bot_commands
 
 
 async def get_start(message: Message):
-    menu_builder = ReplyKeyboardBuilder()
-    menu_builder.button(
-        text="Помощь"
-    )
-    menu_builder.button(
-        text="Словарь"
-    )
-    menu_builder.button(
-        text="Добавить карточку"
-    )
     await message.answer(
         "Меню",
-        reply_markup=menu_builder.as_markup(resize_keyboard=True)
+        reply_markup=MAIN_MENU_BOARD
     )
 
 async def help_command(message: Message, bot: Bot, command: CommandObject):

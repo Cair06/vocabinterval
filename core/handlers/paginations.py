@@ -18,18 +18,21 @@ class Pagination:
 
     # Для всех карточек(словарь)
     def update_kb_general(self):
-        buttons = []
+        navigation_buttons = []
+        action_buttons = []
         base_callback_data = "page"
 
         if self.current_page > 1:
-            buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}"))
+            navigation_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}"))
 
-        buttons.append(InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
+        navigation_buttons.append(InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
 
         if self.current_page < self.total_pages:
-            buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}"))
+            navigation_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}"))
+            
+        action_buttons.append(InlineKeyboardButton(text="🗑️ Удалить все карточки", callback_data="delete_all_cards"))
 
-        return InlineKeyboardMarkup(inline_keyboard=[buttons])
+        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
     # Для конкретнной карточки
     def update_kb_detail(self, detail_word, card_id=None):

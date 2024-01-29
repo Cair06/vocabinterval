@@ -2,10 +2,10 @@
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_all_user_cards, get_user_cards_by_word
+from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id
 from .paginations import Pagination
 from core.handlers.utils import format_word
-
+from core.keyboards import MAIN_MENU_BOARD
 
 
 async def on_start(message: Message, session_maker: sessionmaker):
@@ -55,11 +55,19 @@ async def on_get_card_details(message: Message, session_maker: sessionmaker):
             + f"Создано: {card.created_at}\n\n"
             for card in current_page_cards
         )
+        
+        repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
+        repetition_details = '\n'.join(
+            f"Уровень: {repetition.level}, Следующий повтор: {repetition.next_review_date}"
+            for repetition in repetitions_info
+        )
+
+        response += f"Повторения:\n{repetition_details}"
         await message.answer(response, reply_markup=pagination.update_kb_detail(detail_word=word,
                                                                                 card_id=current_page_cards[0].id))
     else:
-        await message.answer("Не найдена карточка(и) с данным словом.")
-        
+        await message.answer("Не найдена карточка(и) с данным словом.", reply_markup=MAIN_MENU_BOARD)
+
         
 async def on_card_details_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
     data_parts = callback_query.data.split('_')

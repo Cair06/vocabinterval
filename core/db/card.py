@@ -10,7 +10,8 @@ from sqlalchemy import (
     SmallInteger,
     CheckConstraint,
     select,
-    desc
+    desc,
+    delete
 )
 from sqlalchemy.orm import relationship, sessionmaker, Session, selectinload
 from sqlalchemy.exc import ProgrammingError
@@ -33,8 +34,8 @@ class Card(BaseModel):
     user_id = Column(BigInteger, ForeignKey("users.user_id"))
     user = relationship("User", back_populates="cards")
 
-    repetitions = relationship("Repetition", back_populates="card")
-    
+    repetitions = relationship("Repetition", back_populates="card", cascade="all, delete")
+
     
     def __str__(self) -> str:
         return f"--Card: {self.foreign_word}--"
@@ -66,36 +67,44 @@ async def create_card(
         user_id: BigInteger,
 ) -> Card | None:
     """
-    Создать пост
+    Создать карточку и связанное повторение.
     :param foreign_word:
     :param translation:
     :param session_maker:
     :param transcription:
     :param example_usage:
     :param user_id:
-    :param budget:
-    :param pub_price:
-    :param url_price:
-    :return:
+    :return: Созданная карточка или None
     """
     async with session_maker() as session:
         async with session.begin():
+            # Создаем карточку
             card = Card(
                 foreign_word=foreign_word,
-                translation = translation,
-                transcription = transcription,
-                example_usage = example_usage,
-                user_id = user_id,
+                translation=translation,
+                transcription=transcription,
+                example_usage=example_usage,
+                user_id=user_id,
             )
-            session: AsyncSession | Session
+            session.add(card)
+            await session.flush()  # Обновляем идентификаторы для только что созданных объектов
+
+            # Создаем связанное повторение
+            repetition = Repetition(
+                card=card, 
+                level=0,
+                next_review_date=datetime.date.today()
+            )
+            session.add(repetition)
             try:
-                session.add(card)
+                await session.commit()
+                return card
             except ProgrammingError as e:
                 logging.error(e)
+                await session.rollback()
                 return None
-            else:
-                return card
-            
+
+   
 async def get_all_user_cards(session_maker: sessionmaker, user_id: BigInteger) -> list[Card]:
     async with session_maker() as session:
         async with session.begin():
@@ -135,3 +144,31 @@ async def update_card(session_maker: sessionmaker, card_id: int, user_id: BigInt
                 session.add(card_to_update)
                 return True
             return False
+        
+        
+async def delete_all_user_cards(session_maker: sessionmaker, user_id: int) -> None:
+    """
+    Удаляет все карточки пользователя из базы данных.
+    :param session_maker: Фабрика сессий для подключения к БД.
+    :param user_id: Идентификатор пользователя.
+    """
+    async with session_maker() as session:
+        async with session.begin():
+            # Удаляем все карточки, принадлежащие пользователю
+            await session.execute(
+                delete(Card)
+                .where(Card.user_id == user_id)
+            )
+            await session.commit()
+
+
+
+async def get_repetitions_by_card_id(session_maker: sessionmaker, card_id: int) -> list[Repetition]:
+    async with session_maker() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Repetition)
+                .where(Repetition.card_id == card_id)
+                .order_by(Repetition.next_review_date)
+            )
+            return result.scalars().all()
