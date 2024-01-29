@@ -1,12 +1,3 @@
-from aiogram.fsm.context import FSMContext
-from sqlalchemy.orm import sessionmaker
-from aiogram.types import Message
-from core.handlers.start import get_start
-from aiogram.types import ReplyKeyboardRemove
-from core.db import create_card
-from core.structures.fsm_group import CardStates
-
-
 async def update_card_creation_message(bot_message_id, instruction_message_id, state, message, **kwargs):
     card_info = await state.get_data()
     card_info.update(kwargs)

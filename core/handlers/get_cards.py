@@ -1,9 +1,8 @@
 # Создаём фильтр для данных колбэка пагинации
 from aiogram.types import Message, CallbackQuery
-from aiogram import Router
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_all_user_cards, get_user_cards_by_word, delete_card
+from core.db import get_all_user_cards, get_user_cards_by_word
 from .paginations import Pagination
 from core.handlers.utils import format_word
 
@@ -16,7 +15,7 @@ async def on_start(message: Message, session_maker: sessionmaker):
     cards_list = "\n".join(f"▫️ {card.foreign_word}" for card in pagination.get_current_page_items())
 
     await message.answer(f"📖 Словарь:\n\n{cards_list}",
-                         reply_markup=pagination.update_kb_general())#pagination.update_kb())
+                         reply_markup=pagination.update_kb_general())
 
 
 async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
@@ -32,33 +31,6 @@ async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmak
         cards_list = "\n".join(f"▫️ {card.foreign_word}" for card in pagination.get_current_page_items())
         await callback_query.message.edit_text(f"📖 Словарь:\n\n{cards_list}", reply_markup=pagination.update_kb_general())
         await callback_query.answer()
-
-
-# async def on_get_card_by_word(message: Message, session_maker: sessionmaker):
-#     user_id = message.from_user.id
-#     args = message.text.split(maxsplit=1) 
-#     # Разделяем текст сообщения на части
-#     if len(args) < 2:
-#         await message.reply("Пожалуйства введите слово для поиска.")
-#         return
-
-#     word = format_word(args[1])  # Предполагаем, что слово - это первый аргумент
-#     cards = await get_user_cards_by_word(session_maker, user_id, word)
-    
-#     if cards:
-#         # Формируем ответное сообщение с информацией по всем найденным карточкам
-#         response = "🔤 Найденный результат\n\n"+'\n'.join(
-#             f"Слово: {card.foreign_word}\n"
-#             f"Перевод: {card.translation}\n"
-#             + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
-#             + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
-#             + f"Создано: {card.created_at}\n\n"
-#             for card in cards
-#         )
-#         await message.answer(response)
-#     else:
-#         await message.answer("Не найдена карточка(и) с данным словом.")
-
 
 
 async def on_get_card_details(message: Message, session_maker: sessionmaker):

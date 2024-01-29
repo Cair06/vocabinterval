@@ -1,19 +1,11 @@
 from aiogram.types import Message, CallbackQuery
-from aiogram import Bot, Dispatcher, F
-from aiogram import Router
-from aiogram.filters import Command, CommandStart, CommandObject
+from aiogram import Bot
+from aiogram.filters import CommandObject
 from aiogram.utils.keyboard import (
-    ReplyKeyboardBuilder, InlineKeyboardBuilder
+    ReplyKeyboardBuilder
 )
 
-from core.structures.fsm_group import CardStates
-from core.settings import settings, bot_commands
-from sqlalchemy.orm import sessionmaker
-
-from core.db import get_all_user_cards
-from .paginations import Pagination#, get_pagination_keyboard
-
-# router = Router()
+from core.settings import  bot_commands
 
 
 # @router.startup()

@@ -11,9 +11,9 @@ class CardStates(StatesGroup):
     waiting_for_transcription = State()
 
 class EditCardState(StatesGroup):
-    waiting_for_field_choice = State()  # Ожидание выбора поля для редактирования
-    waiting_for_field_value = State()  # Ожидание нового значения поля
+    waiting_for_field_choice = State()
+    waiting_for_field_value = State()
 
 
 class DeleteCardState(StatesGroup):
-    waiting_for_confirm_delete = State()  # Ожидание выбора поля для редактирования
+    waiting_for_confirm_delete = State()

@@ -12,43 +12,32 @@ from .get_cards import on_get_card_details
 async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmaker, state: FSMContext):
     _, __, card_id = callback_query.data.split('_')
     card_id = int(card_id)
-
     # Сохраняем card_id во временное хранилище состояний
     await state.update_data(card_id=card_id)
-
     await callback_query.message.answer("Выберите поле для редактирования:", reply_markup=CHOOSE_FIELD_TO_EDIT)
-
-    # Устанавливаем состояние ожидания выбора поля
-    await EditCardState.waiting_for_field_choice.set()
+    await state.set_state(EditCardState.waiting_for_field_choice)
     await callback_query.answer()
 
-
-# Обработчик выбора поля для редактирования
 
 async def on_field_choice(callback_query: CallbackQuery, state: FSMContext):
+    """Обработчик выбора поля для редактирования"""
     field = callback_query.data.split('_')[1]
-
     # Сохраняем выбранное поле во временное хранилище состояний
     await state.update_data(field_to_edit=field)
-
-    # Запрашиваем у пользователя новое значение для поля
     await callback_query.message.answer(f"Введите новое значение для поля {field}:")
     
-    # Устанавливаем состояние ожидания нового значения поля
-    await EditCardState.waiting_for_field_value.set()
+    await state.set_state(EditCardState.waiting_for_field_value)
     await callback_query.answer()
     
 
-# Обработчик ввода нового значения поля @dp.message_handler(state=EditCardState.waiting_for_field_value)
-
 async def on_field_value(message: Message, session_maker: sessionmaker, state: FSMContext):
+    """Обработчик ввода нового значения поля"""
     new_value = message.text
     user_data = await state.get_data()
     card_id = user_data['card_id']
     field_to_edit = user_data['field_to_edit']
     word = user_data.get('word')
-    
-    
+
     # Обновляем карточку с новым значением
     field_to_update = {field_to_edit: new_value}
     updated = await update_card(session_maker, card_id, message.from_user.id, **field_to_update)
@@ -58,6 +47,5 @@ async def on_field_value(message: Message, session_maker: sessionmaker, state: F
         await on_get_card_details(message, session_maker, word)
     else:
         await message.answer("Ошибка при обновлении карточки.")
-    
-    # Завершаем состояние
+        
     await state.finish()
