@@ -1,39 +1,33 @@
 import pathlib
-import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
-from aiogram.fsm.storage.memory import MemoryStorage
-# from aioredis import Redis
+from aiogram.fsm.storage.redis import RedisStorage
 import asyncio
 import logging
+from redis import asyncio as aioredis
 
-from sqlalchemy import URL
 from middlewares.register_check import RegisterCheck
 
 from settings import settings, bot_commands, porstgres_url
-# from core.handlers.start import router
 
 from db import create_async_engine, get_session_maker
 from handlers import register_user_commands
 
 
-    
-    
-
 async def bot_start(logger: logging.Logger) -> None:
     try:
         logging.basicConfig(level=logging.DEBUG)
-        
+
         commands_for_bot = [BotCommand(command=cmd[0], description=cmd[1]) for cmd in bot_commands]
 
-        # redis = Redis()
-
-        dp = Dispatcher(storage=MemoryStorage())
+        redis = aioredis.Redis()
+        # storage = RedisStorage.from_url("redis://localhost:6379/0")
+        dp = Dispatcher(storage=RedisStorage(redis=redis))
 
         dp.message.middleware(RegisterCheck())
         dp.callback_query.middleware(RegisterCheck())
-        
+
         bot = Bot(token=settings.bots.bot_token, parse_mode="HTML")
         register_user_commands(dp)
         await bot.set_my_commands(commands=commands_for_bot)
@@ -42,12 +36,12 @@ async def bot_start(logger: logging.Logger) -> None:
         session_maker = get_session_maker(async_engine)
         # Деллегировано alembic
         # await proceed_schemas(async_engine, BaseModel.metadata)
-        
+
         await dp.start_polling(bot, session_maker=session_maker)
     finally:
         await bot.session.close()
-        
-         
+
+
 def setup_env():
     """Настройка переменных окружения"""
     from dotenv import load_dotenv

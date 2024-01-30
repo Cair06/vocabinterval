@@ -1,5 +1,5 @@
 # Создаём фильтр для данных колбэка пагинации
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.orm import sessionmaker
 from structures.fsm_group import DeleteCardState

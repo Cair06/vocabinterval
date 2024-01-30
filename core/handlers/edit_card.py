@@ -11,8 +11,12 @@ from keyboards import MAIN_MENU_BOARD
 
 
 async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmaker, state: FSMContext):
+    """
+    :param
+    """
     _, __, card_id = callback_query.data.split('_')
     card_id = int(card_id)
+
     # Сохраняем card_id во временное хранилище состояний
     await state.update_data(card_id=card_id)
     await callback_query.message.answer("Выберите поле для редактирования:", reply_markup=CHOOSE_FIELD_TO_EDIT)

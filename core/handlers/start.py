@@ -1,11 +1,9 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram import Bot
 from aiogram.filters import CommandObject
-from aiogram.utils.keyboard import (
-    ReplyKeyboardBuilder
-)
 
-from settings import  bot_commands
+
+from settings import bot_commands
 from keyboards import MAIN_MENU_BOARD
 
 # @router.startup()
