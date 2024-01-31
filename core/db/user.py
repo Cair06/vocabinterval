@@ -1,7 +1,9 @@
 import datetime
 
+from redis.asyncio.client import Redis
 from sqlalchemy import Column, BigInteger, VARCHAR, DATE, select
 from sqlalchemy.orm import relationship, sessionmaker, selectinload
+from sqlalchemy.exc import ProgrammingError
 
 
 from .base import BaseModel
@@ -45,3 +47,29 @@ async def get_user(user_id: int, session_maker: sessionmaker) -> User:
                     .filter(User.user_id == user_id)  # type: ignore
             )
             return result.scalars().one()
+
+
+async def create_user(user_id: int, username: str, session_maker: sessionmaker) -> None:
+    async with session_maker() as session:
+        async with session.begin():
+            user = User(
+                user_id=user_id,
+                username=username
+            )
+            try:
+                session.add(user)
+            except ProgrammingError as e:
+                # TODO: add log
+                pass
+
+
+async def is_user_exists(user_id: int, session_maker: sessionmaker, redis: Redis) -> bool:
+    res = await redis.get(name='is_user_exists:' + str(user_id))
+    if not res:
+        async with session_maker() as session:
+            async with session.begin():
+                sql_res = await session.execute(select(User).where(User.user_id == user_id))
+                await redis.set(name='is_user_exists:' + str(user_id), value=1 if sql_res else 0)
+                return bool(sql_res)
+    else:
+        return bool(res)

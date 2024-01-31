@@ -38,7 +38,7 @@ from .delete_card import (
     on_delete_all_cards_confirm
 )
 
-from structures.fsm_group import CardStates, EditCardState, DeleteCardState
+from core.structures.fsm_group import CardStates, EditCardState, DeleteCardState
 from .paginations import Pagination
 
 __all__ = ["register_user_commands", "get_start", "Pagination"]

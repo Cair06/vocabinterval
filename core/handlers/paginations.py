@@ -1,7 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-
 class Pagination:
     def __init__(self, items, page_size=10):
         self.items = items
@@ -14,7 +13,6 @@ class Pagination:
         end = start + self.page_size
         return self.items[start:end]
 
-
     # Для всех карточек(словарь)
     def update_kb_general(self):
         navigation_buttons = []
@@ -22,13 +20,16 @@ class Pagination:
         base_callback_data = "page"
 
         if self.current_page > 1:
-            navigation_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}"))
+            navigation_buttons.append(
+                InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}"))
 
-        navigation_buttons.append(InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
+        navigation_buttons.append(
+            InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
 
         if self.current_page < self.total_pages:
-            navigation_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}"))
-            
+            navigation_buttons.append(
+                InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}"))
+
         action_buttons.append(InlineKeyboardButton(text="🗑️ Удалить все карточки", callback_data="delete_all_cards"))
 
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
@@ -40,12 +41,15 @@ class Pagination:
         base_callback_data = "details_page"
 
         if self.current_page > 1:
-            navigation_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}_{detail_word}"))
+            navigation_buttons.append(InlineKeyboardButton(text="⬅️",
+                                                           callback_data=f"{base_callback_data}_{self.current_page - 1}_{detail_word}"))
 
-        navigation_buttons.append(InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
+        navigation_buttons.append(
+            InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
 
         if self.current_page < self.total_pages:
-            navigation_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}_{detail_word}"))
+            navigation_buttons.append(InlineKeyboardButton(text="➡️",
+                                                           callback_data=f"{base_callback_data}_{self.current_page + 1}_{detail_word}"))
 
         # Если указан card_id, добавляем кнопки Редактировать и Удалить
         if card_id is not None:

@@ -5,7 +5,6 @@ from aiogram.types import BotCommand
 from aiogram.fsm.storage.redis import RedisStorage
 import asyncio
 import logging
-from redis import asyncio as aioredis
 
 from middlewares.register_check import RegisterCheck
 
@@ -13,6 +12,7 @@ from settings import settings, bot_commands, porstgres_url
 
 from db import create_async_engine, get_session_maker
 from handlers import register_user_commands
+from redis import asyncio as aioredis
 
 
 async def bot_start(logger: logging.Logger) -> None:
@@ -20,9 +20,8 @@ async def bot_start(logger: logging.Logger) -> None:
         logging.basicConfig(level=logging.DEBUG)
 
         commands_for_bot = [BotCommand(command=cmd[0], description=cmd[1]) for cmd in bot_commands]
-
         redis = aioredis.Redis()
-        # storage = RedisStorage.from_url("redis://localhost:6379/0")
+
         dp = Dispatcher(storage=RedisStorage(redis=redis))
 
         dp.message.middleware(RegisterCheck())
@@ -37,7 +36,7 @@ async def bot_start(logger: logging.Logger) -> None:
         # Деллегировано alembic
         # await proceed_schemas(async_engine, BaseModel.metadata)
 
-        await dp.start_polling(bot, session_maker=session_maker)
+        await dp.start_polling(bot, session_maker=session_maker, redis=redis)
     finally:
         await bot.session.close()
 

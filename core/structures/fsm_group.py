@@ -1,5 +1,6 @@
 from aiogram.fsm.state import StatesGroup, State
 
+
 class CardStates(StatesGroup):
     """
         Состояния для постов
@@ -9,6 +10,7 @@ class CardStates(StatesGroup):
     waiting_for_translation = State()
     waiting_for_example_usage = State()
     waiting_for_transcription = State()
+
 
 class EditCardState(StatesGroup):
     waiting_for_field_choice = State()
