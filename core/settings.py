@@ -15,15 +15,16 @@ bot_commands = (
 load_dotenv()
 
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
-DB_PORT = os.getenv("DB_PORT")
+DB_USER = os.getenv("POSTGRES_USER")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_NAME = os.getenv("POSTGRES_DB")
+DB_PORT = os.getenv("POSTGRES_PORT")
+DB_HOST = os.getenv("POSTGRES_HOST", "db")
 
 porstgres_url = URL.create(
     "postgresql+asyncpg",
     username=DB_USER,
-    host="localhost",
+    host=DB_HOST,
     password=DB_PASSWORD,
     database=DB_NAME,
     port=DB_PORT

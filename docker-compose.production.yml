@@ -21,7 +21,6 @@ services:
   bot:
     build: .
     command: sh -c "make migrate && python -m core.run"
-      - .:/usr/src/app
     env_file:
       - ./.env
     restart: always

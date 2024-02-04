@@ -12,7 +12,8 @@ async def on_start(message: Message, session_maker: sessionmaker):
     user_id = message.from_user.id
     user_cards = await get_all_user_cards(session_maker, user_id)
     pagination = Pagination(user_cards, page_size=10)
-    cards_list = "\n".join(f"▫️ {card.foreign_word}" for card in pagination.get_current_page_items())
+    cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
+                           for card in pagination.get_current_page_items())
 
     await message.answer(f"📖 Словарь:\n\n{cards_list}",
                          reply_markup=pagination.update_kb_general())
@@ -28,7 +29,8 @@ async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmak
     pagination.current_page = page_number
     
     if page_action == "page":
-        cards_list = "\n".join(f"▫️ {card.foreign_word}" for card in pagination.get_current_page_items())
+        cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
+                               for card in pagination.get_current_page_items())
         await callback_query.message.edit_text(f"📖 Словарь:\n\n{cards_list}", reply_markup=pagination.update_kb_general())
         await callback_query.answer()
 

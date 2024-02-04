@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from core.db import BaseModel
-from core.settings import DB_USER, DB_PASSWORD
+from core.settings import DB_USER, DB_PASSWORD, DB_HOST
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -29,6 +29,9 @@ target_metadata = BaseModel.metadata
 section = config.config_ini_section
 config.set_section_option(section, "DB_USER", DB_USER)
 config.set_section_option(section, "DB_PASSWORD", DB_PASSWORD)
+
+config.set_section_option(section, "DB_HOST", DB_HOST)
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

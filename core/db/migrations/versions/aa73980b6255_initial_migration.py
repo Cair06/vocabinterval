@@ -1,7 +1,7 @@
 """First
 
 Revision ID: 31afe3a45704
-Revises: 
+Revises:
 Create Date: 2024-01-29 18:20:03.814816
 
 """
@@ -36,7 +36,7 @@ def upgrade() -> None:
     sa.Column('example_usage', sa.VARCHAR(length=512), nullable=True),
     sa.Column('created_at', sa.DATE(), nullable=True),
     sa.Column('user_id', sa.BigInteger(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_cards_foreign_word'), 'cards', ['foreign_word'], unique=False)

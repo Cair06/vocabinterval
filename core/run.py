@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 from aiogram import Bot, Dispatcher
@@ -6,12 +7,12 @@ from aiogram.fsm.storage.redis import RedisStorage
 import asyncio
 import logging
 
-from middlewares.register_check import RegisterCheck
+from core.middlewares.register_check import RegisterCheck
 
-from settings import settings, bot_commands, porstgres_url
+from core.settings import settings, bot_commands, porstgres_url
 
-from db import create_async_engine, get_session_maker
-from handlers import register_user_commands
+from core.db import create_async_engine, get_session_maker
+from core.handlers import register_user_commands
 from redis import asyncio as aioredis
 
 
@@ -20,7 +21,11 @@ async def bot_start(logger: logging.Logger) -> None:
         logging.basicConfig(level=logging.DEBUG)
 
         commands_for_bot = [BotCommand(command=cmd[0], description=cmd[1]) for cmd in bot_commands]
-        redis = aioredis.Redis()
+        redis = aioredis.Redis(
+            host=os.getenv("REDIS_HOST") or "redis",
+            password=os.getenv("REDIS_PASSWORD") or None,
+            username=os.getenv("REDIS_USER") or None
+        )
 
         dp = Dispatcher(storage=RedisStorage(redis=redis))
 
