@@ -19,6 +19,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseModel
 
+REVIEW_INTERVALS = {
+    1: datetime.timedelta(days=1),
+    2: datetime.timedelta(days=3),
+    3: datetime.timedelta(days=7),
+    4: datetime.timedelta(days=21),
+    5: datetime.timedelta(days=60),
+    6: datetime.timedelta(days=180),
+    7: datetime.timedelta(days=360),
+}
+
+
 
 class Card(BaseModel):
     __tablename__ = "cards"
@@ -172,3 +183,15 @@ async def get_repetitions_by_card_id(session_maker: sessionmaker, card_id: int) 
                 .order_by(Repetition.next_review_date)
             )
             return result.scalars().all()
+        
+
+async def update_repetition(session_maker: sessionmaker, repetition_id: int, success: bool) -> None:
+    async with session_maker() as session:
+        async with session.begin():
+            repetition = await session.get(Repetition, repetition_id)
+            if repetition and success:
+                repetition.level = min(repetition.level + 1, 7)  # Предотвращаем уровень выше максимального
+                interval = REVIEW_INTERVALS.get(repetition.level, datetime.timedelta(days=1))
+                repetition.next_review_date = datetime.date.today() + interval
+                session.add(repetition)
+            await session.commit()

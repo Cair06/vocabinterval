@@ -9,7 +9,7 @@ import logging
 
 from core.middlewares.register_check import RegisterCheck
 
-from core.settings import settings, bot_commands, porstgres_url
+from core.settings import settings, bot_commands, postgres_url, redis_settings
 
 from core.db import create_async_engine, get_session_maker
 from core.handlers import register_user_commands
@@ -21,11 +21,8 @@ async def bot_start(logger: logging.Logger) -> None:
         logging.basicConfig(level=logging.DEBUG)
 
         commands_for_bot = [BotCommand(command=cmd[0], description=cmd[1]) for cmd in bot_commands]
-        redis = aioredis.Redis(
-            host=os.getenv("REDIS_HOST") or "redis",
-            password=os.getenv("REDIS_PASSWORD") or None,
-            username=os.getenv("REDIS_USER") or None
-        )
+
+        redis = aioredis.Redis(**redis_settings)
 
         dp = Dispatcher(storage=RedisStorage(redis=redis))
 
@@ -36,7 +33,7 @@ async def bot_start(logger: logging.Logger) -> None:
         register_user_commands(dp)
         await bot.set_my_commands(commands=commands_for_bot)
 
-        async_engine = create_async_engine(porstgres_url)
+        async_engine = create_async_engine(postgres_url)
         session_maker = get_session_maker(async_engine)
         # Деллегировано alembic
         # await proceed_schemas(async_engine, BaseModel.metadata)
