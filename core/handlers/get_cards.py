@@ -2,7 +2,7 @@
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id
+from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id, LEVEL_TO_PERCENT
 from core.handlers.utils import format_word
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
@@ -60,7 +60,7 @@ async def on_get_card_details(message: Message, session_maker: sessionmaker):
         
         repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
         repetition_details = '\n'.join(
-            f"Уровень: {repetition.level}, Следующий повтор: {repetition.next_review_date}"
+            f"Процент: {LEVEL_TO_PERCENT[repetition.level]}, Следующий повтор: {repetition.next_review_date}"
             for repetition in repetitions_info
         )
 
@@ -88,7 +88,7 @@ async def on_card_details_pagination(callback_query: CallbackQuery, session_make
         pagination.current_page = page_number
         current_page_cards = pagination.get_current_page_items()
 
-        cards_details = f"№{page_number} {word}:\n\n" + "\n".join(
+        response = f"№{page_number} {word}:\n\n" + "\n".join(
             f"Слово: {card.foreign_word}\n"
             f"Перевод: {card.translation}\n"
             + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
@@ -96,7 +96,16 @@ async def on_card_details_pagination(callback_query: CallbackQuery, session_make
             + f"Создано: {card.created_at}\n\n"
             for card in pagination.get_current_page_items()
         )
-        await callback_query.message.edit_text(cards_details,
+
+        repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
+        repetition_details = '\n'.join(
+            f"Процент: {LEVEL_TO_PERCENT[repetition.level]}, Следующий повтор: {repetition.next_review_date}"
+            for repetition in repetitions_info
+        )
+
+        response += f"Повторения:\n{repetition_details}"
+
+        await callback_query.message.edit_text(response,
                                                reply_markup=pagination.update_kb_detail(detail_word=word,
                                                                                         card_id=current_page_cards[0].id))
         await callback_query.answer()
