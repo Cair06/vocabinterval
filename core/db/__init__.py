@@ -2,7 +2,8 @@ __all__ = [
     "BaseModel", "create_async_engine", "get_session_maker", "proceed_schemas", 
     "User", "Card", "Repetition", "create_card", "get_all_user_cards", "get_user_cards_by_word",
     "delete_card", "update_card", "get_repetitions_by_card_id", "delete_all_user_cards",
-    "is_user_exists", "create_user", "get_user"
+    "get_cards_for_repetition", "update_repetition", "LEVEL_TO_COLOR", "LEVEL_TO_PERCENT",
+    "is_user_exists", "create_user", "get_user",
 ]
 
 from .base import BaseModel
@@ -26,5 +27,9 @@ from .card import (
     delete_card,
     update_card,
     get_repetitions_by_card_id,
-    delete_all_user_cards
+    delete_all_user_cards,
+    get_cards_for_repetition,
+    update_repetition,
+    LEVEL_TO_COLOR,
+    LEVEL_TO_PERCENT
 )

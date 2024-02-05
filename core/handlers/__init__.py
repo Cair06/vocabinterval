@@ -38,6 +38,17 @@ from .delete_card import (
     on_delete_all_cards_confirm
 )
 
+from .get_cards_repetition import (
+    on_repetition_cards_start,
+    on_repetition_cards_pagination,
+)
+
+from .edit_repetition import (
+    on_details_repetition,
+    on_approve_repetition,
+    on_details_repetition_pagination
+)
+
 from core.structures.fsm_group import CardStates, EditCardState, DeleteCardState
 from .paginations import Pagination
 
@@ -65,15 +76,15 @@ def register_user_commands(router: Router) -> None:
     router.message.register(menu_posts_create_example_usage, CardStates.waiting_for_example_usage)
 
     # Навигация в словаре
-    router.callback_query.register(on_pagination, lambda c: c.data.startswith('page_'))
+    router.callback_query.register(on_pagination, lambda c: c.data.startswith('cards_page_'))
 
     # Данные об определенной карточке
     router.message.register(on_get_card_details, Command(commands=['get_card']))
-    router.callback_query.register(on_card_details_pagination, lambda c: c.data.startswith('details_page_'))
+    router.callback_query.register(on_card_details_pagination, lambda c: c.data.startswith('cards_details_'))
 
     # Для изменения определенной карточки
     router.callback_query.register(on_edit_card, lambda c: c.data.startswith('edit_card_'))
-    router.callback_query.register(on_field_choice, lambda c: c.data.startswith('edit_'))
+    router.callback_query.register(on_field_choice, lambda c: c.data.startswith('card_edit_'))
     router.message.register(on_field_value, EditCardState.waiting_for_field_value)
 
     # Удаление карточки(ек)
@@ -81,6 +92,13 @@ def register_user_commands(router: Router) -> None:
     router.message.register(on_delete_all_cards_confirm, DeleteCardState.waiting_for_confirm_delete_all)
     router.callback_query.register(on_delete_card, lambda c: c.data.startswith('delete_card_'))
     router.message.register(on_delete_card_confirm, DeleteCardState.waiting_for_confirm_delete)
+
+    router.message.register(on_repetition_cards_start, F.text == 'Список повторений')
+    router.callback_query.register(on_repetition_cards_pagination, lambda c: c.data.startswith('repetitions_page_'))
+
+    router.callback_query.register(on_details_repetition, lambda c: c.data == 'detail_repetition')
+    router.callback_query.register(on_approve_repetition, lambda c: c.data.startswith('approve_repetition_'))
+    router.callback_query.register(on_details_repetition_pagination, lambda c: c.data.startswith('repetition_detail_page'))
 
     # no operation
     router.callback_query.register(noop_callback_handler, lambda c: c.data == 'noop')

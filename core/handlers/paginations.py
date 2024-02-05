@@ -13,49 +13,39 @@ class Pagination:
         end = start + self.page_size
         return self.items[start:end]
 
-    # Для всех карточек(словарь)
-    def update_kb_general(self):
+    def create_navigation_buttons(self, callback_data_prefix):
         navigation_buttons = []
-        action_buttons = []
-        base_callback_data = "page"
-
         if self.current_page > 1:
             navigation_buttons.append(
-                InlineKeyboardButton(text="⬅️", callback_data=f"{base_callback_data}_{self.current_page - 1}"))
-
+                InlineKeyboardButton(text="⬅️", callback_data=f"{callback_data_prefix}_{self.current_page - 1}"))
         navigation_buttons.append(
             InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
-
         if self.current_page < self.total_pages:
             navigation_buttons.append(
-                InlineKeyboardButton(text="➡️", callback_data=f"{base_callback_data}_{self.current_page + 1}"))
+                InlineKeyboardButton(text="➡️", callback_data=f"{callback_data_prefix}_{self.current_page + 1}"))
+        return navigation_buttons
 
-        action_buttons.append(InlineKeyboardButton(text="🗑️ Удалить все карточки", callback_data="delete_all_cards"))
-
+    def update_kb_general(self):
+        navigation_buttons = self.create_navigation_buttons("cards_page")
+        action_buttons = [InlineKeyboardButton(text="🗑️ Удалить все карточки", callback_data="delete_all_cards")]
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
-    # Для конкретнной карточки
-    def update_kb_detail(self, detail_word, card_id=None):
-        navigation_buttons = []
-        action_buttons = []
-        base_callback_data = "details_page"
+    def update_kb_detail(self, detail_word, card_id):
+        navigation_buttons = self.create_navigation_buttons(f"cards_details_{detail_word}_page")
+        action_buttons = [
+            InlineKeyboardButton(text="✏️", callback_data=f"edit_card_{card_id}"),
+            InlineKeyboardButton(text="🗑️", callback_data=f"delete_card_{card_id}")
+        ]
+        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
-        if self.current_page > 1:
-            navigation_buttons.append(InlineKeyboardButton(text="⬅️",
-                                                           callback_data=f"{base_callback_data}_{self.current_page - 1}_{detail_word}"))
+    def update_kb_repetitions(self):
+        navigation_buttons = self.create_navigation_buttons("repetitions_page")
+        action_buttons = [InlineKeyboardButton(text="📥", callback_data=f"detail_repetition"),]
+        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
-        navigation_buttons.append(
-            InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop"))
-
-        if self.current_page < self.total_pages:
-            navigation_buttons.append(InlineKeyboardButton(text="➡️",
-                                                           callback_data=f"{base_callback_data}_{self.current_page + 1}_{detail_word}"))
-
-        # Если указан card_id, добавляем кнопки Редактировать и Удалить
-        if card_id is not None:
-            action_buttons.append(InlineKeyboardButton(text="✏️", callback_data=f"edit_card_{card_id}"))
-            action_buttons.append(InlineKeyboardButton(text="🗑️", callback_data=f"delete_card_{card_id}"))
-
+    def update_kb_repetition_detail(self, repetition_id):
+        navigation_buttons = self.create_navigation_buttons("repetition_detail_page")
+        action_buttons = [InlineKeyboardButton(text="✅", callback_data=f"approve_repetition_{repetition_id}"),]
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
     def next_page(self):

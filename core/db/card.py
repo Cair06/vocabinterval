@@ -29,7 +29,28 @@ REVIEW_INTERVALS = {
     7: datetime.timedelta(days=360),
 }
 
+LEVEL_TO_COLOR = {
+    0: "⚫️",
+    1: "🟤",
+    2: "🔴",
+    3: "🟠",
+    4: "🟡",
+    5: "🟢",
+    6: "🔵",
+    7: "🟣",
+}
 
+
+LEVEL_TO_PERCENT = {
+    0: "0%",
+    1: "15%",
+    2: "30%",
+    3: "45%",
+    4: "60%",
+    5: "75%",
+    6: "90%",
+    7: "100%",
+}
 
 class Card(BaseModel):
     __tablename__ = "cards"
@@ -195,3 +216,15 @@ async def update_repetition(session_maker: sessionmaker, repetition_id: int, suc
                 repetition.next_review_date = datetime.date.today() + interval
                 session.add(repetition)
             await session.commit()
+
+
+async def get_cards_for_repetition(session_maker: sessionmaker, user_id: BigInteger, date: datetime.date) -> list[Card]:
+    async with session_maker() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Card)
+                .join(Repetition, Repetition.card_id == Card.id)
+                .filter(Card.user_id == user_id, Repetition.next_review_date <= date)
+                .order_by(Repetition.next_review_date)
+            )
+            return result.scalars().all()

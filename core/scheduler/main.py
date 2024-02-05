@@ -37,18 +37,18 @@ class WorkerSettings:
     functions = [send_daily_reminders, ]
     redis_settings = RedisSettings(**redis_settings)
     cron_jobs = [
-        # cron(
-        #     send_daily_reminders,
-        #     name="send-daily-reminders",
-        #     hour=0,  # запуск в полночь по UTC
-        #     minute=0
-        # ),
         cron(
             send_daily_reminders,
             name="send-daily-reminders",
-            second=0,  # Запуск каждую минуту для тестирования
-        )
-    ]
+            hour=0,  # запуск в полночь по UTC
+            minute=0
+        ),]
+    #     cron(
+    #         send_daily_reminders,
+    #         name="send-daily-reminders",
+    #         second=0,  # Запуск каждую минуту для тестирования
+    #     )
+    # ]
 
 #
 # if __name__ == "__main__":

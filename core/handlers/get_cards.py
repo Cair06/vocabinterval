@@ -20,7 +20,7 @@ async def on_start(message: Message, session_maker: sessionmaker):
 
 
 async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
-    page_action, page_number = callback_query.data.split('_')
+    page_action, page_number = callback_query.data.split('_')[1], callback_query.data.split('_')[2]
     page_number = int(page_number)
     
     user_id = callback_query.from_user.id
@@ -73,12 +73,12 @@ async def on_get_card_details(message: Message, session_maker: sessionmaker):
         
 async def on_card_details_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
     data_parts = callback_query.data.split('_')
-    # Мы ожидаем, что data_parts будет содержать как минимум 3 элемента: ['details', 'page', '2', 'Music']
-    if len(data_parts) < 4 or not data_parts[2].isdigit():
+    # Мы ожидаем, что data_parts будет содержать как минимум 3 элемента: ['cards','details', 'Music', 'page', '2',]
+    if len(data_parts) < 5 or not data_parts[4].isdigit():
         await callback_query.answer("Ошибка: неправильный формат данных пагинации.")
         return
 
-    action, page_action, page_number, word = data_parts[0], data_parts[1], int(data_parts[2]), data_parts[3]
+    action, word, page_action, page_number = data_parts[1],  data_parts[2], data_parts[3], int(data_parts[4]),
 
     user_id = callback_query.from_user.id
     cards = await get_user_cards_by_word(session_maker, user_id, word)
