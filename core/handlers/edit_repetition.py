@@ -1,7 +1,7 @@
 # Создаём фильтр для данных колбэка пагинации
 import datetime
 
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
 from core.db import (
@@ -32,13 +32,12 @@ async def on_details_repetition(callback_query: CallbackQuery, session_maker: se
     repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
     repetition = repetitions_info[0]
 
-    current_page_cards = pagination.get_current_page_items()
-    repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
-    repetition = repetitions_info[0]
-
     result = "\n".join(
-        f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n{LEVEL_TO_COLOR[repetition.level]}"
-        f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+        f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+        + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
+        + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
+        + f"Создано: {card.created_at}\n\n"
+        + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
         for card in pagination.get_current_page_items()
     )
     await callback_query.message.answer(f"Повторения:\n\n{result}",
@@ -52,7 +51,6 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
     # Разбор данных колбэка для получения идентификатора повторения и действия
     # repetition_detail_page
     data_parts = callback_query.data.split('_')
-    page_action = data_parts[2]
     page_number = int(data_parts[3])
 
     user_id = callback_query.from_user.id
@@ -76,9 +74,12 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
     # Составляем сообщение с деталями повторений
     if repetition:
         result = "\n".join(
-            f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n{LEVEL_TO_COLOR[repetition.level]}"
-            f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-            for card in current_page_cards
+            f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+            + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
+            + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
+            + f"Создано: {card.created_at}\n\n"
+            + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+            for card in pagination.get_current_page_items()
         )
         await callback_query.message.edit_text(f"Повторения:\n\n{result}",
                                                reply_markup=pagination.update_kb_repetition_detail(repetition.id))

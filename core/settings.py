@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from sqlalchemy import URL
 
+
 bot_commands = (
     ("start", "Начало работы с ботом", "Хорошая команда, чтобы начать работу с ботом"),
     ("help", "Помощь и справка", "Поможет если это будет необходимо"),
@@ -55,7 +56,7 @@ class Settings:
 def get_settings():
     return Settings(bots=Bots(
         bot_token=os.getenv("TOKEN"),
-        admin_id=os.getenv("ADMIN_ID"),
+        admin_id=int(os.getenv("ADMIN_ID")),
         sql_alchemy_url=os.getenv("SQL_ALCHEMY_URL")
     ))
 

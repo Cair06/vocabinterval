@@ -9,8 +9,10 @@ from core.keyboards import MAIN_MENU_BOARD
 
 
 async def on_delete_all_cards(callback_query: CallbackQuery, state: FSMContext):
-    await callback_query.message.answer("Вы действительно хотите удалить все карточки?", reply_markup=CANCEL_AND_NEXT_BOARD)
+    await callback_query.message.answer("Вы действительно хотите удалить все карточки?",
+                                        reply_markup=CANCEL_AND_NEXT_BOARD)
     await state.set_state(DeleteCardState.waiting_for_confirm_delete_all)
+
 
 async def on_delete_all_cards_confirm(message: Message, session_maker: sessionmaker, state: FSMContext):
     if message.text == 'Отмена':
@@ -24,10 +26,10 @@ async def on_delete_all_cards_confirm(message: Message, session_maker: sessionma
         await state.clear()
 
 
-
 async def on_delete_card(callback_query: CallbackQuery, state: FSMContext):
     await state.update_data(card_id=callback_query.data.split('_')[-1])  # Сохраняем ID карточки в состояние
-    await callback_query.message.answer("Вы действительно хотите удалить эту карточку?", reply_markup=CANCEL_AND_NEXT_BOARD)
+    await callback_query.message.answer("Вы действительно хотите удалить эту карточку?",
+                                        reply_markup=CANCEL_AND_NEXT_BOARD)
 
     await state.set_state(DeleteCardState.waiting_for_confirm_delete)
 

@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Set
 
 from sqlalchemy import (
     Column,
@@ -13,7 +14,7 @@ from sqlalchemy import (
     desc,
     delete
 )
-from sqlalchemy.orm import relationship, sessionmaker, Session, selectinload
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,7 +41,6 @@ LEVEL_TO_COLOR = {
     7: "🟣",
 }
 
-
 LEVEL_TO_PERCENT = {
     0: "0%",
     1: "15%",
@@ -51,6 +51,7 @@ LEVEL_TO_PERCENT = {
     6: "90%",
     7: "100%",
 }
+
 
 class Card(BaseModel):
     __tablename__ = "cards"
@@ -68,7 +69,6 @@ class Card(BaseModel):
 
     repetitions = relationship("Repetition", back_populates="card", cascade="all, delete")
 
-    
     def __str__(self) -> str:
         return f"--Card: {self.foreign_word}--"
 
@@ -82,10 +82,11 @@ class Repetition(BaseModel):
     next_review_date = Column(DATE)
 
     card = relationship("Card", back_populates="repetitions")
-    
+
     __table_args__ = (
         CheckConstraint("level >= 0 AND level <= 7", name="check_level_range"),
     )
+
     def __str__(self) -> str:
         return f"--Repetition: ID:{self.card_id} Word:{self.card.foreign_word} Next review date: {self.next_review_date}--"
 
@@ -123,7 +124,7 @@ async def create_card(
 
             # Создаем связанное повторение
             repetition = Repetition(
-                card=card, 
+                card=card,
                 level=0,
                 next_review_date=datetime.date.today()
             )
@@ -136,14 +137,14 @@ async def create_card(
                 await session.rollback()
                 return None
 
-   
+
 async def get_all_user_cards(session_maker: sessionmaker, user_id: BigInteger) -> list[Card]:
     async with session_maker() as session:
         async with session.begin():
             result = await session.execute(select(Card).filter(Card.user_id == user_id).order_by(desc(Card.created_at)))
             return result.scalars().all()
-        
-        
+
+
 async def get_user_cards_by_word(session_maker: sessionmaker, user_id: BigInteger, word: str) -> list[Card]:
     async with session_maker() as session:
         async with session.begin():
@@ -176,8 +177,8 @@ async def update_card(session_maker: sessionmaker, card_id: int, user_id: BigInt
                 session.add(card_to_update)
                 return True
             return False
-        
-        
+
+
 async def delete_all_user_cards(session_maker: sessionmaker, user_id: int) -> None:
     """
     Удаляет все карточки пользователя из базы данных.
@@ -194,7 +195,6 @@ async def delete_all_user_cards(session_maker: sessionmaker, user_id: int) -> No
             await session.commit()
 
 
-
 async def get_repetitions_by_card_id(session_maker: sessionmaker, card_id: int) -> list[Repetition]:
     async with session_maker() as session:
         async with session.begin():
@@ -204,7 +204,7 @@ async def get_repetitions_by_card_id(session_maker: sessionmaker, card_id: int) 
                 .order_by(Repetition.next_review_date)
             )
             return result.scalars().all()
-        
+
 
 async def update_repetition(session_maker: sessionmaker, repetition_id: int, success: bool) -> None:
     async with session_maker() as session:
@@ -228,3 +228,16 @@ async def get_cards_for_repetition(session_maker: sessionmaker, user_id: BigInte
                 .order_by(Repetition.next_review_date)
             )
             return result.scalars().all()
+
+
+async def get_user_ids_with_repetitions_for_today(session: AsyncSession, date: datetime.date) -> Set[int]:
+    # Получаем уникальные user_id, у которых есть карточки для повторения на указанную дату или раньше
+    query = (
+        select(Card.user_id)
+        .join(Repetition, Card.id == Repetition.card_id)
+        .where(Repetition.next_review_date <= date)
+        .distinct()
+    )
+    result = await session.execute(query)
+    user_ids = {user_id for (user_id,) in result}
+    return user_ids
