@@ -19,13 +19,22 @@ services:
     ports:
       - "5432:5432"
   bot:
-    build: .
     command: sh -c "make migrate && python -m core.run"
+    image: fusionme/vocabinterval-bot
     env_file:
       - ./.env
     restart: always
     depends_on:
       - db
       - redis
+  scheduler:
+    env_file:
+      - ./.env
+    restart: always
+    image: fusionme/vocabinterval-scheduler
+    depends_on:
+      - db
+      - redis
+      - bot
 volumes:
   pg_data:
