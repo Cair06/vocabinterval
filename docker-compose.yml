@@ -22,6 +22,7 @@ services:
     build: .
     command: sh -c "make migrate && python -m core.run"
       - .:/app
+    image: fusionme/vocabinterval-bot
     env_file:
       - ./.env
     restart: always
@@ -35,6 +36,7 @@ services:
     env_file:
       - ./.env
     restart: always
+    image: fusionme/vocabinterval-scheduler
     depends_on:
       - db
       - redis

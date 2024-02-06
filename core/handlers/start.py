@@ -2,6 +2,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import Bot
 from aiogram.filters import CommandObject
 
+from core.handlers.utils import START_SPEECH
 from core.settings import bot_commands
 from core.keyboards import MAIN_MENU_BOARD
 
@@ -16,10 +17,7 @@ from core.keyboards import MAIN_MENU_BOARD
 
 
 async def get_start(message: Message):
-    await message.answer(
-        "Меню",
-        reply_markup=MAIN_MENU_BOARD
-    )
+    await message.answer(START_SPEECH, reply_markup=MAIN_MENU_BOARD)
 
 
 async def help_command(message: Message, bot: Bot, command: CommandObject):

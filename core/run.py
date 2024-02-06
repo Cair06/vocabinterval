@@ -4,6 +4,7 @@ import pathlib
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from aiogram.fsm.storage.redis import RedisStorage
+
 import asyncio
 import logging
 
