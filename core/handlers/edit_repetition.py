@@ -13,6 +13,7 @@ from core.db import (
 )
 from core.handlers.paginations import Pagination
 from core.keyboards import MAIN_MENU_BOARD
+from .utils import menu_text
 
 
 async def on_details_repetition(callback_query: CallbackQuery, session_maker: sessionmaker):
@@ -32,16 +33,18 @@ async def on_details_repetition(callback_query: CallbackQuery, session_maker: se
     repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
     repetition = repetitions_info[0]
 
-    result = "\n".join(
-        f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
-        + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
-        + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
-        + f"Создано: {card.created_at}\n\n"
-        + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-        for card in pagination.get_current_page_items()
-    )
-    await callback_query.message.answer(f"Повторения:\n\n{result}",
-                                        reply_markup=pagination.update_kb_repetition_detail(repetition.id))
+    result = ("Повторения:\n\n" +
+              "\n".join(
+                  f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+                  + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
+                  + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
+                  + f"Создано: {card.created_at}\n\n"
+                  + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+                  for card in pagination.get_current_page_items()
+              ) + menu_text)
+
+    await callback_query.message.answer(result, reply_markup=pagination.update_kb_repetition_detail(repetition.id))
+    await callback_query.answer(cache_time=60)
 
 
 async def on_details_repetition_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
@@ -73,15 +76,16 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
 
     # Составляем сообщение с деталями повторений
     if repetition:
-        result = "\n".join(
-            f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
-            + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
-            + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
-            + f"Создано: {card.created_at}\n\n"
-            + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-            for card in pagination.get_current_page_items()
-        )
-        await callback_query.message.edit_text(f"Повторения:\n\n{result}",
+        result = (f"Повторения:\n\n" +
+                  "\n".join(
+                      f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+                      + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
+                      + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
+                      + f"Создано: {card.created_at}\n\n"
+                      + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+                      for card in pagination.get_current_page_items()
+                  ) + menu_text)
+        await callback_query.message.edit_text(result,
                                                reply_markup=pagination.update_kb_repetition_detail(repetition.id))
     else:
         await callback_query.message.edit_text("Детали повторения не найдены.")
@@ -95,4 +99,13 @@ async def on_approve_repetition(callback_query: CallbackQuery, session_maker: se
     """
     repetition_id = int(callback_query.data.split('_')[2])
     await update_repetition(session_maker, repetition_id, success=True)
-    await callback_query.message.answer("Отлично!\nКарточка успешно была повторена.")
+    await callback_query.message.answer("Отлично!\nКарточка успешно была повторена.", reply_markup=MAIN_MENU_BOARD)
+    await callback_query.answer(cache_time=100)
+
+
+async def on_decline_repetition(callback_query: CallbackQuery, session_maker: sessionmaker):
+    """
+    Выводит поддержку для пользователя, что не угадал.
+    """
+    await callback_query.message.answer("Ничего страшного, получится позже!", reply_markup=MAIN_MENU_BOARD)
+    await callback_query.answer(cache_time=60)

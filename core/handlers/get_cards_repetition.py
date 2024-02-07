@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from core.db import get_cards_for_repetition, get_repetitions_by_card_id, LEVEL_TO_COLOR, LEVEL_TO_PERCENT
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
+from .utils import menu_text
 
 
 async def on_repetition_cards_start(message: Message, session_maker: sessionmaker):
@@ -23,14 +24,14 @@ async def on_repetition_cards_start(message: Message, session_maker: sessionmake
     repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
     repetition = repetitions_info[0]
 
-    cards_list = "\n".join(
-        f"▫️ {card.foreign_word} - {LEVEL_TO_COLOR[repetition.level]}"
-        f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-        for card in pagination.get_current_page_items()
-    )
+    result = ("📚 Список для повторения:\n\n" +
+              "\n".join(
+                  f"▫️ {card.foreign_word} - {LEVEL_TO_COLOR[repetition.level]}"
+                  f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+                  for card in pagination.get_current_page_items()
+              ) + menu_text)
 
-    await message.answer(f"📚 Список для повторения:\n\n{cards_list}",
-                         reply_markup=pagination.update_kb_repetitions())
+    await message.answer(result, reply_markup=pagination.update_kb_repetitions())
 
 
 async def on_repetition_cards_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
@@ -51,11 +52,11 @@ async def on_repetition_cards_pagination(callback_query: CallbackQuery, session_
     repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
     repetition = repetitions_info[0]
 
-    cards_list = "\n".join(
-        f"▫️ {card.foreign_word} - {LEVEL_TO_COLOR[repetition.level]}"
-        f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-        for card in pagination.get_current_page_items())
+    result = ("📚 Список для повторения:\n\n" +
+              "\n".join(
+                  f"▫️ {card.foreign_word} - {LEVEL_TO_COLOR[repetition.level]}"
+                  f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
+                  for card in pagination.get_current_page_items()) + menu_text )
 
-    await callback_query.message.edit_text(f"📚 Список для повторения:\n\n{cards_list}",
-                                           reply_markup=pagination.update_kb_repetitions())
+    await callback_query.message.edit_text(result, reply_markup=pagination.update_kb_repetitions())
     await callback_query.answer()

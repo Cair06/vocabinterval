@@ -12,6 +12,7 @@ COPY core/scheduler/ ./core/scheduler/
 COPY core/db/ ./core/db/
 COPY core/settings.py ./core/
 COPY core/__init__.py ./core/
+COPY .env .
 
 # Устанавливаем PYTHONPATH
 ENV PYTHONPATH=/app

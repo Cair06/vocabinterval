@@ -28,15 +28,24 @@ async def help_command(message: Message, bot: Bot, command: CommandObject):
                     f"{cmd[0]} - {cmd[1]}\n\n{cmd[2]}"
                 )
             else:
-                return await message.answer("Команда не найдена")
+                return await message.answer("Команда не найдена", reply_markup=MAIN_MENU_BOARD)
     return await help_func(message)
 
 
 async def help_func(message: Message):
     return await message.answer(
         "Помощь и справка о боте\n"
-        "Для того чтобы получить информацию о команде используй /help `команда`\n"
+        "Для того чтобы получить информацию о команде используй /help `команда`\n", reply_markup=MAIN_MENU_BOARD
     )
+
+
+async def menu_command(message: Message):
+    await message.answer("Выберите действие из основного меню:", reply_markup=MAIN_MENU_BOARD)
+
+
+# async def send_value_with_menu(message: Message, dictionary_content: str, reply_markup):
+#     instruction = "\n\nНажмите на /menu, чтобы вернуться к меню."
+#     await message.answer(dictionary_content + instruction, reply_markup=reply_markup)
 
 
 async def noop_callback_handler(callback_query: CallbackQuery):

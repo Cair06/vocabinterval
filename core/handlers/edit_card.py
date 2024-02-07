@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from core.structures.fsm_group import EditCardState
 from core.db import update_card
 from core.keyboards import CHOOSE_FIELD_TO_EDIT, MAIN_MENU_BOARD
+from .utils import menu_text
 from .get_cards import on_get_card_details
 
 
@@ -18,14 +19,15 @@ async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmake
 
     # Сохраняем card_id во временное хранилище состояний
     await state.update_data(card_id=card_id)
-    await callback_query.message.answer("Выберите поле для редактирования:", reply_markup=CHOOSE_FIELD_TO_EDIT)
+    await callback_query.message.answer("Выберите поле для редактирования:" + menu_text,
+                                        reply_markup=CHOOSE_FIELD_TO_EDIT)
     await state.set_state(EditCardState.waiting_for_field_choice)
     await callback_query.answer()
 
 
 async def on_field_choice(callback_query: CallbackQuery, state: FSMContext):
     """Обработчик выбора поля для редактирования"""
-    field = callback_query.data.split('_')[1]
+    field = callback_query.data.split('_')[2]
     # Сохраняем выбранное поле во временное хранилище состояний
     await state.update_data(field_to_edit=field)
     await callback_query.message.answer(f"Введите новое значение для поля {field}:")

@@ -6,6 +6,7 @@ from aiogram.client import bot
 from arq import cron
 from arq.connections import RedisSettings
 
+from core.keyboards import MAIN_MENU_BOARD
 from core.settings import settings, postgres_url, redis_settings
 from core.db import get_user_ids_with_repetitions_for_today, create_async_engine, get_session_maker
 
@@ -23,7 +24,7 @@ async def send_daily_reminders(ctx):
                    "повторений.")
 
         for user_id in user_ids_to_notify:
-            await bot.send_message(chat_id=user_id, text=message)
+            await bot.send_message(chat_id=user_id, text=message, reply_markup=MAIN_MENU_BOARD)
 
 
 class WorkerSettings:
@@ -33,11 +34,11 @@ class WorkerSettings:
         cron(
             send_daily_reminders,
             name="send-daily-reminders",
-            hour=5,  # запуск в 08:00 по МСК(UTC +3)
+            hour=17,  # запуск в 20:00 по МСК(UTC +3)
             minute=0
         ), ]
-    # cron(
-    #     send_daily_reminders,
-    #     name="send-daily-reminders",
-    #     second=0,  # Запуск каждую минуту для тестирования
-    # )]
+        # cron(
+        #     send_daily_reminders,
+        #     name="send-daily-reminders",
+        #     second=0,  # Запуск каждую минуту для тестирования
+        # )]

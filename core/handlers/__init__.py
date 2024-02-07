@@ -7,7 +7,7 @@ from .start import (
     get_start,
     help_command,
     help_func,
-    noop_callback_handler
+    noop_callback_handler, menu_command
 )
 
 from .create_card import (
@@ -46,6 +46,7 @@ from .get_cards_repetition import (
 from .edit_repetition import (
     on_details_repetition,
     on_approve_repetition,
+    on_decline_repetition,
     on_details_repetition_pagination
 )
 
@@ -63,6 +64,7 @@ def register_user_commands(router: Router) -> None:
     # Основные
     router.message.register(get_start, CommandStart())
     router.message.register(help_command, Command(commands=['help']))
+    router.message.register(menu_command, Command(commands=['menu']))
     router.message.register(get_start, F.text == 'Старт')
     router.message.register(help_func, F.text == "Помощь")
     router.message.register(on_start, F.text == 'Словарь')
@@ -98,6 +100,7 @@ def register_user_commands(router: Router) -> None:
 
     router.callback_query.register(on_details_repetition, lambda c: c.data == 'detail_repetition')
     router.callback_query.register(on_approve_repetition, lambda c: c.data.startswith('approve_repetition_'))
+    router.callback_query.register(on_decline_repetition, lambda c: c.data.startswith('decline_repetition_'))
     router.callback_query.register(on_details_repetition_pagination, lambda c: c.data.startswith('repetition_detail_page'))
 
     # no operation

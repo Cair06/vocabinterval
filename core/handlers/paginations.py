@@ -45,7 +45,10 @@ class Pagination:
 
     def update_kb_repetition_detail(self, repetition_id):
         navigation_buttons = self.create_navigation_buttons("repetition_detail_page")
-        action_buttons = [InlineKeyboardButton(text="✅", callback_data=f"approve_repetition_{repetition_id}"),]
+        action_buttons = [
+            InlineKeyboardButton(text="❌", callback_data=f"decline_repetition_{repetition_id}"),
+            InlineKeyboardButton(text="✅", callback_data=f"approve_repetition_{repetition_id}"),
+        ]
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
     def next_page(self):

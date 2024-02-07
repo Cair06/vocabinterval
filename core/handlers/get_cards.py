@@ -3,7 +3,7 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
 from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id, LEVEL_TO_PERCENT
-from core.handlers.utils import format_word
+from core.handlers.utils import format_word, menu_text
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
 
@@ -15,9 +15,10 @@ async def on_start(message: Message, session_maker: sessionmaker):
     cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
                            for card in pagination.get_current_page_items())
 
-    await message.answer(f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду"
-                         f" /get_card 'word'"
-                         f"\n\n{cards_list}",
+    dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card 'word'"
+                          f"\n\n{cards_list}" + menu_text)
+
+    await message.answer(dictionary_content,
                          reply_markup=pagination.update_kb_general())
 
 
@@ -33,8 +34,11 @@ async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmak
     if page_action == "page":
         cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
                                for card in pagination.get_current_page_items())
-        await callback_query.message.edit_text(f"📖 Словарь:\n\nДля работы с конкретной карточкой "
-                                               f"используйте команду /get_card 'word'\n\n{cards_list}",
+
+        dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card 'word'"
+                              f"\n\n{cards_list}" + menu_text)
+
+        await callback_query.message.edit_text(dictionary_content,
                                                reply_markup=pagination.update_kb_general())
         await callback_query.answer()
 
@@ -68,9 +72,11 @@ async def on_get_card_details(message: Message, session_maker: sessionmaker):
             for repetition in repetitions_info
         )
 
-        response += f"Повторения:\n{repetition_details}"
-        await message.answer(response, reply_markup=pagination.update_kb_detail(detail_word=word,
-                                                                                card_id=current_page_cards[0].id))
+        response += f"Повторения:\n{repetition_details}" + menu_text
+
+        inl_markup = pagination.update_kb_detail(detail_word=word, card_id=current_page_cards[0].id)
+
+        await message.answer(response, reply_markup=inl_markup)
     else:
         await message.answer("Не найдена карточка(и) с данным словом.", reply_markup=MAIN_MENU_BOARD)
 
@@ -107,12 +113,11 @@ async def on_card_details_pagination(callback_query: CallbackQuery, session_make
             for repetition in repetitions_info
         )
 
-        response += f"Повторения:\n{repetition_details}"
+        response += f"Повторения:\n{repetition_details}\n\n" + menu_text
 
-        await callback_query.message.edit_text(response,
-                                               reply_markup=pagination.update_kb_detail(detail_word=word,
-                                                                                        card_id=current_page_cards[
-                                                                                            0].id))
+        inl_markup = pagination.update_kb_detail(detail_word=word, card_id=current_page_cards[0].id)
+
+        await callback_query.message.edit_text(response, reply_markup=inl_markup)
         await callback_query.answer()
     else:
         await callback_query.answer("Карточка(и) с таким словом не найдены.")

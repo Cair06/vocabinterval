@@ -56,7 +56,7 @@ class Settings:
 def get_settings():
     return Settings(bots=Bots(
         bot_token=os.getenv("TOKEN"),
-        admin_id=int(os.getenv("ADMIN_ID")),
+        admin_id=os.getenv("ADMIN_ID"),
         sql_alchemy_url=os.getenv("SQL_ALCHEMY_URL")
     ))
 
