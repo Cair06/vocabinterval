@@ -56,6 +56,8 @@ from .paginations import Pagination
 
 __all__ = ["register_user_commands", "get_start", "Pagination"]
 
+from .statistic import top_users
+
 
 def register_user_commands(router: Router) -> None:
     """
@@ -105,6 +107,9 @@ def register_user_commands(router: Router) -> None:
     router.callback_query.register(on_decline_repetition, lambda c: c.data.startswith('decline_repetition_'))
     router.callback_query.register(on_show_translation, lambda c: c.data.startswith('show_translation_'))
     router.callback_query.register(on_details_repetition_pagination, lambda c: c.data.startswith('repetition_detail_page'))
+
+    # dp.register_message_handler(top_users_command, commands=['top_users'])
+    router.message.register(top_users, Command(commands=['top']))
 
     # no operation
     router.callback_query.register(noop_callback_handler, lambda c: c.data == 'noop')
