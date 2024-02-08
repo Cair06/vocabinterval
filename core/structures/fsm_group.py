@@ -17,6 +17,9 @@ class EditCardState(StatesGroup):
     waiting_for_field_value = State()
 
 
+class GetCardState(StatesGroup):
+    waiting_for_word = State()
+
 class DeleteCardState(StatesGroup):
     waiting_for_confirm_delete = State()
     waiting_for_confirm_delete_all = State()

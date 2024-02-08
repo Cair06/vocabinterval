@@ -12,6 +12,8 @@ COPY core/scheduler/ ./core/scheduler/
 COPY core/db/ ./core/db/
 COPY core/settings.py ./core/
 COPY core/__init__.py ./core/
+COPY core/keyboards/main_menu.py ./core/keyboards/
+
 COPY .env .
 
 # Устанавливаем PYTHONPATH

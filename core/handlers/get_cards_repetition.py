@@ -4,10 +4,15 @@ import datetime
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_cards_for_repetition, get_repetitions_by_card_id, LEVEL_TO_COLOR, LEVEL_TO_PERCENT
+from core.db import get_cards_for_repetition, get_repetitions_by_card_id, LEVEL_TO_COLOR, LEVEL_TO_PERCENT, Card, \
+    get_card_by_id
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
 from .utils import menu_text
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def on_repetition_cards_start(message: Message, session_maker: sessionmaker):
@@ -56,7 +61,17 @@ async def on_repetition_cards_pagination(callback_query: CallbackQuery, session_
               "\n".join(
                   f"▫️ {card.foreign_word} - {LEVEL_TO_COLOR[repetition.level]}"
                   f"({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
-                  for card in pagination.get_current_page_items()) + menu_text )
+                  for card in pagination.get_current_page_items()) + menu_text)
 
     await callback_query.message.edit_text(result, reply_markup=pagination.update_kb_repetitions())
     await callback_query.answer()
+
+
+async def on_show_translation(callback_query: CallbackQuery, session_maker: sessionmaker):
+    card_id = callback_query.data.split('_')[2]
+    card_id = int(card_id)
+    card = await get_card_by_id(session_maker, card_id)
+    if card:
+        await callback_query.answer(text=card.translation, show_alert=True)
+    else:
+        await callback_query.answer("Карточка не найдена", show_alert=True)

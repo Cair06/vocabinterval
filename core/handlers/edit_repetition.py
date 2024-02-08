@@ -35,7 +35,7 @@ async def on_details_repetition(callback_query: CallbackQuery, session_maker: se
 
     result = ("Повторения:\n\n" +
               "\n".join(
-                  f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+                  f"▫️ {card.foreign_word}\n\n"
                   + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
                   + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
                   + f"Создано: {card.created_at}\n\n"
@@ -43,7 +43,8 @@ async def on_details_repetition(callback_query: CallbackQuery, session_maker: se
                   for card in pagination.get_current_page_items()
               ) + menu_text)
 
-    await callback_query.message.answer(result, reply_markup=pagination.update_kb_repetition_detail(repetition.id))
+    inl_markup = pagination.update_kb_repetition_detail(repetition.id, current_page_cards[0].id)
+    await callback_query.message.answer(result, reply_markup=inl_markup)
     await callback_query.answer(cache_time=60)
 
 
@@ -78,15 +79,17 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
     if repetition:
         result = (f"Повторения:\n\n" +
                   "\n".join(
-                      f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>\n\n"
+                      f"▫️ {card.foreign_word}\n\n"
                       + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
                       + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
                       + f"Создано: {card.created_at}\n\n"
                       + f"{LEVEL_TO_COLOR[repetition.level]}({LEVEL_TO_PERCENT[repetition.level]}) - 🕓 {repetition.next_review_date}"
                       for card in pagination.get_current_page_items()
                   ) + menu_text)
-        await callback_query.message.edit_text(result,
-                                               reply_markup=pagination.update_kb_repetition_detail(repetition.id))
+
+        inl_markup = pagination.update_kb_repetition_detail(repetition.id, current_page_cards[0].id)
+
+        await callback_query.message.edit_text(result, reply_markup=inl_markup)
     else:
         await callback_query.message.edit_text("Детали повторения не найдены.")
 

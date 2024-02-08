@@ -22,7 +22,7 @@ from .get_cards import (
     on_start,
     on_pagination,
     on_get_card_details,
-    on_card_details_pagination
+    on_card_details_pagination, on_word_received
 )
 
 from .edit_card import (
@@ -40,7 +40,7 @@ from .delete_card import (
 
 from .get_cards_repetition import (
     on_repetition_cards_start,
-    on_repetition_cards_pagination,
+    on_repetition_cards_pagination, on_show_translation,
 )
 
 from .edit_repetition import (
@@ -50,7 +50,7 @@ from .edit_repetition import (
     on_details_repetition_pagination
 )
 
-from core.structures.fsm_group import CardStates, EditCardState, DeleteCardState
+from core.structures.fsm_group import CardStates, EditCardState, DeleteCardState, GetCardState
 from .paginations import Pagination
 
 __all__ = ["register_user_commands", "get_start", "Pagination"]
@@ -82,6 +82,7 @@ def register_user_commands(router: Router) -> None:
 
     # Данные об определенной карточке
     router.message.register(on_get_card_details, Command(commands=['get_card']))
+    router.message.register(on_word_received, GetCardState.waiting_for_word)
     router.callback_query.register(on_card_details_pagination, lambda c: c.data.startswith('cards_details_'))
 
     # Для изменения определенной карточки
@@ -101,6 +102,7 @@ def register_user_commands(router: Router) -> None:
     router.callback_query.register(on_details_repetition, lambda c: c.data == 'detail_repetition')
     router.callback_query.register(on_approve_repetition, lambda c: c.data.startswith('approve_repetition_'))
     router.callback_query.register(on_decline_repetition, lambda c: c.data.startswith('decline_repetition_'))
+    router.callback_query.register(on_show_translation, lambda c: c.data.startswith('show_translation_'))
     router.callback_query.register(on_details_repetition_pagination, lambda c: c.data.startswith('repetition_detail_page'))
 
     # no operation

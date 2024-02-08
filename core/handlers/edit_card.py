@@ -53,5 +53,5 @@ async def on_field_value(message: Message, session_maker: sessionmaker, state: F
         await on_get_card_details(message, session_maker, word)
     else:
         await message.answer("Ошибка при обновлении карточки.", reply_markup=MAIN_MENU_BOARD)
-        
-    await state.finish()
+
+    await state.clear()

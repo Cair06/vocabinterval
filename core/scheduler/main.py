@@ -6,9 +6,10 @@ from aiogram.client import bot
 from arq import cron
 from arq.connections import RedisSettings
 
-from core.keyboards import MAIN_MENU_BOARD
 from core.settings import settings, postgres_url, redis_settings
 from core.db import get_user_ids_with_repetitions_for_today, create_async_engine, get_session_maker
+from core.keyboards.main_menu import MAIN_MENU_BOARD
+
 
 async_engine = create_async_engine(postgres_url)
 session_maker = get_session_maker(async_engine)

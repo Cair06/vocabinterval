@@ -241,3 +241,17 @@ async def get_user_ids_with_repetitions_for_today(session: AsyncSession, date: d
     result = await session.execute(query)
     user_ids = {user_id for (user_id,) in result}
     return user_ids
+
+
+async def get_card_by_id(session_maker: sessionmaker, card_id: int) -> Card | None:
+    """
+    Получить карточку по ID.
+    :param session_maker: Фабрика сессий для подключения к БД.
+    :param card_id: Идентификатор карточки.
+    :return: Экземпляр карточки или None.
+    """
+    async with session_maker() as session:
+        async with session.begin():
+            # Используем метод get для получения экземпляра карточки по ID
+            card = await session.get(Card, card_id)
+            return card

@@ -1,4 +1,5 @@
 # Создаём фильтр для данных колбэка пагинации
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
@@ -6,6 +7,7 @@ from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_
 from core.handlers.utils import format_word, menu_text
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
+from ..structures.fsm_group import GetCardState
 
 
 async def on_start(message: Message, session_maker: sessionmaker):
@@ -15,7 +17,7 @@ async def on_start(message: Message, session_maker: sessionmaker):
     cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
                            for card in pagination.get_current_page_items())
 
-    dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card 'word'"
+    dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card"
                           f"\n\n{cards_list}" + menu_text)
 
     await message.answer(dictionary_content,
@@ -35,7 +37,7 @@ async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmak
         cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
                                for card in pagination.get_current_page_items())
 
-        dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card 'word'"
+        dictionary_content = (f"📖 Словарь:\n\nДля работы с конкретной карточкой используйте команду /get_card"
                               f"\n\n{cards_list}" + menu_text)
 
         await callback_query.message.edit_text(dictionary_content,
@@ -43,14 +45,48 @@ async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmak
         await callback_query.answer()
 
 
-async def on_get_card_details(message: Message, session_maker: sessionmaker):
+async def on_get_card_details(message: Message, state: FSMContext, session_maker: sessionmaker):
     user_id = message.from_user.id
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
-        await message.reply("Пожалуйства введите слово для поиска.")
-        return
+        await message.reply("Пожалуйста введите слово для поиска:")
+        await state.set_state(GetCardState.waiting_for_word)
+        # return
+    else:
+        word = format_word(args[1])
+        cards = await get_user_cards_by_word(session_maker, user_id, word)
 
-    word = format_word(args[1])
+        if cards:
+            pagination = Pagination(cards, page_size=1)
+            current_page_cards = pagination.get_current_page_items()
+
+            response = f"№1 {word}:\n\n" + '\n'.join(
+                f"Слово: {card.foreign_word}\n"
+                f"Перевод: {card.translation}\n"
+                + (f"Транскрипция: {card.transcription}\n" if card.transcription else "")
+                + (f"Контекст: {card.example_usage}\n" if card.example_usage else "")
+                + f"Создано: {card.created_at}\n\n"
+                for card in current_page_cards
+            )
+
+            repetitions_info = await get_repetitions_by_card_id(session_maker, current_page_cards[0].id)
+            repetition_details = '\n'.join(
+                f"Процент: {LEVEL_TO_PERCENT[repetition.level]}, Следующий повтор: {repetition.next_review_date}"
+                for repetition in repetitions_info
+            )
+
+            response += f"Повторения:\n{repetition_details}" + menu_text
+
+            inl_markup = pagination.update_kb_detail(detail_word=word, card_id=current_page_cards[0].id)
+
+            await message.answer(response, reply_markup=inl_markup)
+        else:
+            await message.answer("Не найдена карточка(и) с данным словом.", reply_markup=MAIN_MENU_BOARD)
+
+
+async def on_word_received(message: Message, state: FSMContext, session_maker: sessionmaker):
+    word = format_word(message.text)
+    user_id = message.from_user.id
     cards = await get_user_cards_by_word(session_maker, user_id, word)
 
     if cards:
@@ -75,10 +111,14 @@ async def on_get_card_details(message: Message, session_maker: sessionmaker):
         response += f"Повторения:\n{repetition_details}" + menu_text
 
         inl_markup = pagination.update_kb_detail(detail_word=word, card_id=current_page_cards[0].id)
-
         await message.answer(response, reply_markup=inl_markup)
     else:
         await message.answer("Не найдена карточка(и) с данным словом.", reply_markup=MAIN_MENU_BOARD)
+
+    # Ваш код для обработки найденных карточек...
+
+    # После обработки сбрасываем состояние
+    await state.clear()
 
 
 async def on_card_details_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):

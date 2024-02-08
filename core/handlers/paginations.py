@@ -40,16 +40,19 @@ class Pagination:
 
     def update_kb_repetitions(self):
         navigation_buttons = self.create_navigation_buttons("repetitions_page")
-        action_buttons = [InlineKeyboardButton(text="📥", callback_data=f"detail_repetition"),]
+        action_buttons = [InlineKeyboardButton(text="🔄 Повторить", callback_data=f"detail_repetition"),]
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
-    def update_kb_repetition_detail(self, repetition_id):
+    def update_kb_repetition_detail(self, repetition_id, card_id):
         navigation_buttons = self.create_navigation_buttons("repetition_detail_page")
+        translation = [InlineKeyboardButton(text="Показать перевод", callback_data=f"show_translation_{card_id}"),]
+
         action_buttons = [
             InlineKeyboardButton(text="❌", callback_data=f"decline_repetition_{repetition_id}"),
             InlineKeyboardButton(text="✅", callback_data=f"approve_repetition_{repetition_id}"),
         ]
-        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
+        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, translation, action_buttons])
+
 
     def next_page(self):
         if self.current_page < self.total_pages:
