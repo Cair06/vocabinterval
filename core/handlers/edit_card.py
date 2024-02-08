@@ -49,8 +49,7 @@ async def on_field_value(message: Message, session_maker: sessionmaker, state: F
     updated = await update_card(session_maker, card_id, message.from_user.id, **field_to_update)
     
     if updated:
-        await message.answer("Карточка успешно обновлена.", reply_markup=MAIN_MENU_BOARD)        
-        await on_get_card_details(message, session_maker, word)
+        await message.answer("Карточка успешно обновлена.", reply_markup=MAIN_MENU_BOARD)
     else:
         await message.answer("Ошибка при обновлении карточки.", reply_markup=MAIN_MENU_BOARD)
 

@@ -43,10 +43,5 @@ async def menu_command(message: Message):
     await message.answer("Выберите действие из основного меню:", reply_markup=MAIN_MENU_BOARD)
 
 
-# async def send_value_with_menu(message: Message, dictionary_content: str, reply_markup):
-#     instruction = "\n\nНажмите на /menu, чтобы вернуться к меню."
-#     await message.answer(dictionary_content + instruction, reply_markup=reply_markup)
-
-
 async def noop_callback_handler(callback_query: CallbackQuery):
     await callback_query.answer(cache_time=60)

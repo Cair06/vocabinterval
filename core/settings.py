@@ -1,8 +1,14 @@
 import os
+import pathlib
+
 from dotenv import load_dotenv
 from dataclasses import dataclass
 
 from sqlalchemy import URL
+
+
+
+BASE_DIR = pathlib.Path(__file__)
 
 
 bot_commands = (

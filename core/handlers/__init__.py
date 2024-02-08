@@ -7,7 +7,8 @@ from .start import (
     get_start,
     help_command,
     help_func,
-    noop_callback_handler, menu_command
+    noop_callback_handler,
+    menu_command,
 )
 
 from .create_card import (
