@@ -1,6 +1,6 @@
 # VocabIntervalBot
 
-![VocabIntervalBot](images/logo.jpg)
+![VocabIntervalBot](images/logo_256.jpg)
 
 VocabIntervalBot is a Telegram bot designed to assist with the learning of foreign vocabulary through the use of spaced repetition. Enhance your lexicon efficiently!
 
