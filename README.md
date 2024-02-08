@@ -17,14 +17,14 @@ To start using VocabIntervalBot, follow these steps:
 
 1. Search for [@VocabInterval_bot](https://t.me/VocabInterval_bot) on Telegram.
 2. Start the bot and follow the on-screen instructions to set up your account.
-3. Add new words to your vocabulary list using the `/addword` command.
+3. Add new words to your vocabulary list using the `Add cards` command.
 4. Review your words when notified by the bot.
 
 ## Commands
 
 - `/start` - Initialize the bot and get started.
-- `/addword` - Add a new word to your vocabulary list.
-- `/review` - Review words that are due for repetition.
+- `/get_card` - Get a specific word from the dictionary.
+- `/menu` - Return main menu keyboard.
 - `/help` - Get a list of available commands and usage instructions.
 
 ## Contributing
