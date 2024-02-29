@@ -8,7 +8,7 @@ from .start import (
     help_command,
     help_func,
     noop_callback_handler,
-    menu_command,
+    menu_command, set_page_size_dictionary,
 )
 
 from .create_card import (
@@ -68,6 +68,7 @@ def register_user_commands(router: Router) -> None:
     router.message.register(get_start, CommandStart())
     router.message.register(help_command, Command(commands=['help']))
     router.message.register(menu_command, Command(commands=['menu']))
+    router.message.register(set_page_size_dictionary, Command(commands=['set_dictionary_size']))
     router.message.register(get_start, F.text == 'Старт')
     router.message.register(help_func, F.text == "Помощь")
     router.message.register(on_start, F.text == 'Словарь')

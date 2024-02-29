@@ -1,19 +1,22 @@
 # Создаём фильтр для данных колбэка пагинации
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from redis.asyncio import Redis
 from sqlalchemy.orm import sessionmaker
 
-from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id, LEVEL_TO_PERCENT
+from core.db import get_all_user_cards, get_user_cards_by_word, get_repetitions_by_card_id, LEVEL_TO_PERCENT, \
+    get_user_page_size_dictionary
 from core.handlers.utils import format_word, menu_text
 from core.keyboards import MAIN_MENU_BOARD
 from .paginations import Pagination
 from ..structures.fsm_group import GetCardState
 
 
-async def on_start(message: Message, session_maker: sessionmaker):
+async def on_start(message: Message, session_maker: sessionmaker, redis: Redis):
     user_id = message.from_user.id
     user_cards = await get_all_user_cards(session_maker, user_id)
-    pagination = Pagination(user_cards, page_size=10)
+    page_size = await get_user_page_size_dictionary(user_id, session_maker, redis)
+    pagination = Pagination(user_cards, page_size=page_size)
     cards_list = "\n".join(f"▫️ {card.foreign_word} - <tg-spoiler>{card.translation}</tg-spoiler>"
                            for card in pagination.get_current_page_items())
 
@@ -24,13 +27,15 @@ async def on_start(message: Message, session_maker: sessionmaker):
                          reply_markup=pagination.update_kb_general())
 
 
-async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
+async def on_pagination(callback_query: CallbackQuery, session_maker: sessionmaker, redis: Redis):
     page_action, page_number = callback_query.data.split('_')[1], callback_query.data.split('_')[2]
     page_number = int(page_number)
 
     user_id = callback_query.from_user.id
     user_cards = await get_all_user_cards(session_maker, user_id)
-    pagination = Pagination(user_cards, page_size=10)
+    page_size = await get_user_page_size_dictionary(user_id, session_maker, redis)
+
+    pagination = Pagination(user_cards, page_size=page_size)
     pagination.current_page = page_number
 
     if page_action == "page":

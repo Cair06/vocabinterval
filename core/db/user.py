@@ -1,7 +1,7 @@
 import datetime
 
 from redis.asyncio.client import Redis
-from sqlalchemy import Column, BigInteger, VARCHAR, DATE, select, text
+from sqlalchemy import Column, BigInteger, VARCHAR, DATE, select, text, Integer
 from sqlalchemy.orm import relationship, sessionmaker, selectinload
 from sqlalchemy.exc import ProgrammingError
 
@@ -28,6 +28,8 @@ class User(BaseModel):
 
     # Отношение между пользователем и его карточками
     cards = relationship("Card", back_populates="user")
+
+    page_size_dictionary = Column(Integer, default=10)  # Значение по умолчанию 10
 
     def __str__(self) -> str:
         return f"--User:{self.user_id}--"
@@ -78,3 +80,50 @@ async def is_user_exists(user_id: int, session_maker: sessionmaker, redis: Redis
                 return user is not None
     else:
         return bool(int(res))
+
+
+async def get_user_page_size_dictionary(user_id: int, session_maker: sessionmaker, redis: Redis) -> int:
+    # Сначала пытаемся получить размер страницы из Redis
+    page_size = await redis.get(name=f'user:{user_id}:page_size_dictionary')
+
+    if page_size is None:  # Если в Redis нет информации
+        async with session_maker() as session:
+            async with session.begin():
+                # Извлекаем информацию из базы данных
+                user = await session.get(User, user_id)
+                if user:
+                    page_size = user.page_size_dictionary
+                    # Кешируем полученный размер страницы в Redis на определенное время, например, на 1 день (86400 секунд)
+                    await redis.set(name=f'user:{user_id}:page_size', value=str(page_size))
+                else:
+                    # Если пользователя нет в базе данных, используем размер страницы по умолчанию
+                    page_size = 10  # Задаем размер страницы по умолчанию
+                    await redis.set(name=f'user:{user_id}:page_size', value=str(page_size))
+    else:
+        page_size = int(page_size)  # Преобразуем значение из Redis в целое число
+
+    return int(page_size)
+
+
+async def update_user_page_size_dictionary(user_id: int, new_size: int, session_maker: sessionmaker,
+                                           redis: Redis) -> bool:
+    """
+    Обновляет размер страницы словаря для пользователя и кеширует его в Redis.
+    :param user_id: ID пользователя.
+    :param new_size: Новый размер страницы.
+    :param session_maker: Фабрика сессий для подключения к БД.
+    :param redis: Клиент Redis.
+    :return: True, если обновление прошло успешно, иначе False.
+    """
+    async with session_maker() as session:
+        async with session.begin():
+            # Обновляем размер страницы в базе данных
+            user = await session.get(User, user_id)
+            if user:
+                user.page_size_dictionary = new_size  # Предполагаем, что у модели пользователя есть такое поле
+                await session.commit()
+
+                # Кешируем новый размер страницы в Redis
+                await redis.set(name=f'user:{user_id}:page_size_dictionary', value=str(new_size))
+                return True
+            return False

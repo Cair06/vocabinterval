@@ -1,7 +1,10 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram import Bot
 from aiogram.filters import CommandObject
+from sqlalchemy.orm import sessionmaker
+from redis.asyncio.client import Redis
 
+from core.db import update_user_page_size_dictionary
 from core.handlers.utils import START_SPEECH
 from core.settings import bot_commands
 from core.keyboards import MAIN_MENU_BOARD
@@ -41,6 +44,25 @@ async def help_func(message: Message):
 
 async def menu_command(message: Message):
     await message.answer("Выберите действие из основного меню:", reply_markup=MAIN_MENU_BOARD)
+
+
+async def set_page_size_dictionary(message: Message, session_maker: sessionmaker, redis: Redis):
+    # Разбиваем сообщение на части и проверяем, есть ли аргумент
+    parts = message.text.split()
+    if len(parts) < 2 or not parts[1].isdigit():
+        return await message.answer(
+            "Пожалуйста, укажите размер страницы как целое число: /set_page_size_dictionary [число]")
+
+    new_size = int(parts[1])
+    if new_size < 1 or new_size > 100:  # Устанавливаем ограничения для размера страницы
+        return await message.answer("Размер страницы должен быть в диапазоне от 1 до 100.")
+
+    user_id = message.from_user.id
+    # Обновляем размер страницы в базе данных и кешируем его в Redis
+    if await update_user_page_size_dictionary(user_id, new_size, session_maker, redis):
+        await message.answer(f"Размер страницы успешно установлен на {new_size}.")
+    else:
+        await message.answer("Произошла ошибка при обновлении размера страницы.")
 
 
 async def noop_callback_handler(callback_query: CallbackQuery):
