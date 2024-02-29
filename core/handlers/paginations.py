@@ -44,15 +44,25 @@ class Pagination:
         return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, action_buttons])
 
     def update_kb_repetition_detail(self, repetition_id, card_id):
-        navigation_buttons = self.create_navigation_buttons("repetition_detail_page")
-        translation = [InlineKeyboardButton(text="Показать перевод", callback_data=f"show_translation_{card_id}"),]
+        # Включаем номер текущей страницы в callback data
+        approve_callback_data = f"approve_repetition_{repetition_id}_{self.current_page}"
+        decline_callback_data = f"decline_repetition_{repetition_id}_{self.current_page}"
+
+        # Здесь мы создаем кнопки без стрелок навигации
+        navigation_info = [InlineKeyboardButton(text=f"{self.current_page}/{self.total_pages}", callback_data="noop")]
+
+        translation = [InlineKeyboardButton(text="Показать перевод", callback_data=f"show_translation_{card_id}")]
 
         action_buttons = [
-            InlineKeyboardButton(text="❌", callback_data=f"decline_repetition_{repetition_id}"),
-            InlineKeyboardButton(text="✅", callback_data=f"approve_repetition_{repetition_id}"),
+            InlineKeyboardButton(text="❌", callback_data=decline_callback_data),
+            InlineKeyboardButton(text="✅", callback_data=approve_callback_data)
         ]
-        return InlineKeyboardMarkup(inline_keyboard=[navigation_buttons, translation, action_buttons])
 
+        # Объединяем все кнопки в один список для создания клавиатуры
+        keyboard_layout = [navigation_info, translation, action_buttons]
+
+        # Создаем и возвращаем клавиатуру с кнопками
+        return InlineKeyboardMarkup(inline_keyboard=keyboard_layout)
 
     def next_page(self):
         if self.current_page < self.total_pages:

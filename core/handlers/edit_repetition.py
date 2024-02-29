@@ -48,14 +48,19 @@ async def on_details_repetition(callback_query: CallbackQuery, session_maker: se
     await callback_query.answer(cache_time=60)
 
 
-async def on_details_repetition_pagination(callback_query: CallbackQuery, session_maker: sessionmaker):
+async def on_details_repetition_pagination(callback_query: CallbackQuery, session_maker: sessionmaker, current_page: int = None):
     """
     Обрабатывает пагинацию для деталей повторений.
     """
     # Разбор данных колбэка для получения идентификатора повторения и действия
     # repetition_detail_page
-    data_parts = callback_query.data.split('_')
-    page_number = int(data_parts[3])
+    if current_page is None:
+        data_parts = callback_query.data.split('_')
+        if len(data_parts) > 3:
+            current_page = int(data_parts[3])
+        else:
+            current_page = 1  # Значение по умолчанию, если страница не указана
+
 
     user_id = callback_query.from_user.id
     today = datetime.date.today()
@@ -68,7 +73,7 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
 
     # Инициализация пагинации
     pagination = Pagination(cards_for_review, page_size=1)
-    pagination.current_page = page_number
+    pagination.current_page = current_page
 
     # Получаем текущие карточки на странице и информацию о повторениях
     current_page_cards = pagination.get_current_page_items()
@@ -95,20 +100,21 @@ async def on_details_repetition_pagination(callback_query: CallbackQuery, sessio
 
     await callback_query.answer()
 
-
 async def on_approve_repetition(callback_query: CallbackQuery, session_maker: sessionmaker):
-    """
-    Обновляет статус повторения на успешно выполненный.
-    """
-    repetition_id = int(callback_query.data.split('_')[2])
+    data_parts = callback_query.data.split('_')
+    repetition_id = int(data_parts[2])
+    current_page = int(data_parts[3])  # Извлекаем номер страницы
     await update_repetition(session_maker, repetition_id, success=True)
-    await callback_query.message.answer("Отлично!\nКарточка успешно была повторена.", reply_markup=MAIN_MENU_BOARD)
-    await callback_query.answer(cache_time=100)
+    await callback_query.answer("Отлично! Карточка успешно повторена.", show_alert=False)
+
+    await on_details_repetition_pagination(callback_query, session_maker, current_page)
 
 
 async def on_decline_repetition(callback_query: CallbackQuery, session_maker: sessionmaker):
-    """
-    Выводит поддержку для пользователя, что не угадал.
-    """
-    await callback_query.message.answer("Ничего страшного, получится позже!", reply_markup=MAIN_MENU_BOARD)
-    await callback_query.answer(cache_time=60)
+    data_parts = callback_query.data.split('_')
+    repetition_id = int(data_parts[2])
+    current_page = int(data_parts[3])  # Извлекаем номер страницы
+    await update_repetition(session_maker, repetition_id, success=False)
+    await callback_query.answer("Ничего страшного, попробуйте ещё раз!", show_alert=False)
+
+    await on_details_repetition_pagination(callback_query, session_maker, current_page)
