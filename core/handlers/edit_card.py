@@ -27,7 +27,12 @@ async def on_edit_card(callback_query: CallbackQuery, session_maker: sessionmake
 
 async def on_field_choice(callback_query: CallbackQuery, state: FSMContext):
     """Обработчик выбора поля для редактирования"""
-    field = callback_query.data.split('_')[2]
+    parts = callback_query.data.split('_')
+    if parts[-1] == "usage":
+        field = "_".join(parts[-2:])  # Объединяем два последних элемента для example_usage
+    else:
+        field = parts[-1]  # Для всех остальных полей берем последний элемент
+        
     # Сохраняем выбранное поле во временное хранилище состояний
     await state.update_data(field_to_edit=field)
     await callback_query.message.answer(f"Введите новое значение для поля {field}:")
